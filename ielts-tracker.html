@@ -1,0 +1,1772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IELTS Tracker</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='16'%20fill='%234f6bff'/%3E%3Cpath%20d='M14%2021c6-3.2%2012.5-2.6%2018%201.4%205.5-4%2012-4.6%2018-1.4v26c-6-3.2-12.5-2.6-18%201.4-5.5-4-12-4.6-18-1.4z'%20fill='white'/%3E%3Cpath%20d='M38%2033l4%204%207-8'%20fill='none'%20stroke='%234f6bff'%20stroke-width='3.4'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+  --accent:#4f6bff; --accent-soft:color-mix(in srgb,var(--accent) 12%,transparent);
+  --input:#f3f4f6; --danger:#ef4444; --ok:#16a34a;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --radius:14px;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#0c0f16; --card:#141926; --text:#e9ecf5; --muted:#8d96ab; --line:#232b3d;
+  --input:#1b2233; --shadow:0 1px 2px rgba(0,0,0,.45); --ok:#22c55e;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+button,select,input,textarea{font:inherit;color:var(--text)}
+svg{flex:none}
+a{color:inherit}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:6;height:62px;display:flex;align-items:center;gap:14px;padding:0 20px;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar h1{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grow{flex:1}
+.clock{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.iconbtn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* drawer */
+.overlay{position:fixed;inset:0;background:rgba(8,10,18,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+.overlay.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:300px;max-width:88vw;background:var(--card);border-right:1px solid var(--line);transform:translateX(-102%);transition:transform .22s ease;z-index:10;padding:18px 14px;display:flex;flex-direction:column;overflow:auto}
+.drawer.show{transform:none;box-shadow:0 0 40px rgba(0,0,0,.25)}
+.drawer{scrollbar-width:none;-ms-overflow-style:none}
+.drawer::-webkit-scrollbar{display:none}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 14px}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+.brand b{font-size:16px;display:block;line-height:1.1}
+.brand small{color:var(--muted);font-size:12px}
+.testbox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);border-radius:12px;padding:10px 12px;margin:0 0 6px}
+.testbox small{display:block;color:var(--muted);font-size:12px}
+.testbox b{font-size:17px}
+.nav-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 10px 6px}
+.nav{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--text);text-decoration:none;font-weight:500}
+.nav:hover{background:var(--input)}
+.nav.active{background:var(--accent-soft);color:var(--accent)}
+.nav .ntxt{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.nav .ntxt small{color:var(--muted);font-size:12px;font-weight:450}
+.nav.active .ntxt small{color:inherit;opacity:.8}
+.drawer-foot{margin-top:auto;padding:14px 10px 0;color:var(--muted);font-size:12px}
+
+/* layout */
+main{max-width:1100px;margin:0 auto;padding:24px 20px 70px}
+.page-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.page-head h2{margin:0;font-size:24px;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card h3{margin:0 0 2px;font-size:15px;font-weight:650}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.stack{display:grid;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 15px;cursor:pointer;font-weight:550;text-decoration:none;color:var(--text)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+.btn.big{padding:12px 30px;font-size:16px;font-weight:650;border-radius:12px;min-width:150px}
+.btn.danger{color:var(--danger)}
+.btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.btn.save{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650;padding:9px 18px}
+.btn.save:hover{filter:brightness(1.08);color:#fff}
+.btn.save.ok{background:var(--ok);border-color:var(--ok)}
+.ico{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:7px;display:inline-flex}
+.ico:hover{color:var(--accent);background:var(--input)}
+.ico.del:hover{color:var(--danger)}
+.plus{width:36px;height:36px;border-radius:50%;border:none;background:var(--accent);color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.plus:hover{filter:brightness(1.1)}
+
+/* forms */
+.form{display:none;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.form.open{display:grid}
+.field{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:500}
+.field.full{grid-column:1/-1}
+.field input,.field select,.field textarea,.input{background:var(--input);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--text);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus,.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.btns{display:flex;gap:10px;align-items:center;grid-column:1/-1;flex-wrap:wrap}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.st span{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.st b{font-size:24px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.st small{color:var(--muted);font-size:12px;margin-left:4px}
+.progress{height:8px;background:var(--input);border-radius:99px;overflow:hidden;margin-top:10px}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+
+/* cards on dashboard */
+a.skill{text-decoration:none;color:inherit;display:block;transition:transform .12s,border-color .12s}
+a.skill:hover{transform:translateY(-2px);border-color:var(--accent)}
+.skill .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.badge-ic{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.big{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.mini{display:flex;gap:14px;color:var(--muted);font-size:12.5px;margin-top:8px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.countbig{font-size:44px;font-weight:750;letter-spacing:-.04em;line-height:1.05;margin:4px 0}
+.countbig small{font-size:16px;font-weight:550;margin-left:8px;color:var(--muted);letter-spacing:0}
+
+/* entries */
+.entry{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:11px 4px;border-bottom:1px solid var(--line)}
+.entry:last-child{border-bottom:none}
+.score{font-size:20px;font-weight:700;color:var(--accent);text-align:center}
+.meta{min-width:0;font-size:13px}
+.meta .date{font-weight:600}
+.meta .site,.meta .note{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{color:var(--muted);text-align:center;padding:26px 10px}
+.spark{width:100%;height:auto;max-height:110px;display:block}
+.spark path{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.spark circle{fill:var(--accent)}
+
+/* links */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.tile{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow)}
+.tile:hover{border-color:var(--accent)}
+.tile a{display:flex;flex-direction:column;gap:8px;padding:16px;text-decoration:none;color:inherit}
+.tile a b{font-weight:600;font-size:14px;line-height:1.25}
+.tile a small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .act{position:absolute;top:6px;right:6px;display:none;gap:2px;background:var(--card);border-radius:8px}
+.tile:hover .act{display:flex}
+.fav{border-radius:6px;object-fit:contain;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--input);border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 8px;text-decoration:none;color:var(--text);font-size:13px}
+.chip:hover{border-color:var(--accent)}
+
+/* weeks */
+.week{border:1px solid var(--line);border-radius:12px;background:var(--card);align-self:start}
+.week.saved{border-color:var(--ok)}
+.week summary{cursor:pointer;list-style:none;padding:14px 16px}
+.week summary::-webkit-details-marker{display:none}
+.week summary:hover{background:var(--input);border-radius:12px}
+.week .wh{display:flex;align-items:center;gap:8px;font-weight:650;font-size:15px}
+.week .wh .chev{margin-left:auto;color:var(--muted);transition:transform .15s}
+.week[open] .wh .chev{transform:rotate(180deg)}
+.week[open] summary:hover{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.cnts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cnt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;border-radius:99px;padding:3px 10px;background:var(--input);border:1px solid var(--line);color:var(--muted)}
+.cnt b{color:var(--text);font-variant-numeric:tabular-nums}
+.cnt.on{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.cnt.on b{color:var(--accent)}
+.wdet{padding:2px 16px 16px;border-top:1px solid var(--line)}
+.wdet h4{margin:14px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:650}
+.drow{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.drow:last-child{border-bottom:none}
+.drow .sc{min-width:40px;font-weight:750;font-size:18px;color:var(--accent);text-align:center}
+.drow .main{flex:1;min-width:0}
+.drow .main small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{display:inline-block;font-size:12px;border-radius:99px;padding:2px 9px;background:var(--input);border:1px solid var(--line);margin:0 4px 4px 0}
+
+/* vocabulary */
+.bars{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:14px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;font-size:12px;color:var(--muted)}
+.bar i{display:block;width:100%;max-width:46px;background:var(--accent);border-radius:7px 7px 3px 3px;min-height:3px;opacity:.85}
+.bar.today i{opacity:1}
+.bar em{font-style:normal;color:var(--text);font-weight:600;font-size:12px}
+.goalline{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:8px}
+details.card summary{cursor:pointer;font-weight:650;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary .sub{font-weight:450}
+details.card[open] summary{margin-bottom:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.toolbar .input{flex:1;min-width:180px}
+.seg{display:inline-flex;background:var(--input);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:none;background:none;border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:550;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.oxbadge{min-height:26px;margin:10px 0 14px;font-size:13.5px}
+.ox{display:inline-flex;align-items:center;gap:7px;border-radius:99px;padding:4px 12px;font-weight:550}
+.ox.yes{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.ox.no{background:var(--input);color:var(--muted)}
+.ox.none{background:var(--input);color:var(--muted);font-weight:450;border-radius:10px}
+.wmsg{font-size:13.5px;margin-top:10px;color:var(--ok);font-weight:550}
+.wmsg.err{color:var(--danger)}
+.wrow{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.wrow:last-child{border-bottom:none}
+.num{min-width:48px;font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.wmain{flex:1;min-width:0}
+.wtxt{font-weight:650;font-size:15.5px}
+.wmean{color:var(--muted);font-size:14px;margin-top:1px}
+.okc{color:var(--ok);display:inline-flex;vertical-align:middle;margin-left:4px}
+.lvl{font-size:11px;font-weight:650;color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent);border-radius:6px;padding:1px 7px;margin-left:4px;vertical-align:middle}
+.wrow .date{font-size:12px;font-weight:600;white-space:nowrap}
+
+/* settings */
+.set{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.set:last-child{border-bottom:none}
+.set b{display:block;font-weight:600}
+.swatches{display:flex;gap:8px}
+.sw{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;outline:2px solid transparent}
+.sw.on{outline:2px solid var(--text);outline-offset:2px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}
+
+/* avatar + profile */
+.avatar{border-radius:50%;object-fit:cover;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none;overflow:hidden}
+a#meBtn{padding:0;overflow:hidden;border-radius:50%;text-decoration:none}
+.profile-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--text);border:1px solid var(--line);margin-bottom:8px}
+.profile-row:hover{border-color:var(--accent)}
+.profile-row b{display:block;line-height:1.2}
+.profile-row small{color:var(--muted);font-size:12px}
+.pf-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.pf-sum{display:flex;gap:16px;align-items:center}
+.pf-sum h3{font-size:20px;letter-spacing:-.02em;margin:0}
+.pf-bio{white-space:pre-wrap;margin-top:8px;color:var(--text)}
+.pchip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;border-radius:99px;padding:3px 11px;background:var(--accent-soft);color:var(--accent);font-weight:600;margin:6px 6px 0 0}
+.chk{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);background:var(--input);color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none}
+.chk:hover{border-color:var(--accent)}
+.drow.done .chk{background:var(--ok);border-color:var(--ok)}
+.drow.done .wishtxt{color:var(--muted);text-decoration:line-through}
+.drow a.main{text-decoration:none;color:inherit}
+
+/* banner, posts */
+.banner{height:190px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 40%,#000));background-size:cover;background-position:center}
+.pcover-body{display:flex;gap:18px;align-items:flex-start;padding:0 22px 20px;flex-wrap:wrap}
+.pcover-av{margin-top:-52px}
+.pcover-av .avatar{border:4px solid var(--card);box-sizing:content-box}
+.post{border-top:1px solid var(--line);padding:16px 0}
+.post .ph{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.post .ph b{display:block;line-height:1.2}
+.ptext{white-space:pre-wrap;word-break:break-word}
+.pimgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.pimgs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:zoom-in;background:var(--input)}
+.pprev{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pprev .pv{position:relative}
+.pprev img{width:84px;height:84px;object-fit:cover;border-radius:10px;display:block}
+.pprev button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:none;background:var(--danger);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+
+/* notes */
+.notes{columns:3 280px;column-gap:16px}
+.note{break-inside:avoid;margin-bottom:16px;border:1px solid var(--line);border-left:5px solid var(--nc,var(--line));border-radius:12px;padding:14px 16px;background:color-mix(in srgb,var(--nc,transparent) 14%,var(--card));box-shadow:var(--shadow)}
+.nhead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.nhead h3{font-size:16px;margin:0;word-break:break-word}
+.ndesc{white-space:pre-wrap;margin-top:6px;color:var(--text);opacity:.85;word-break:break-word}
+.nchecks{margin-top:10px}
+.ncheck{display:flex;gap:10px;align-items:center;padding:4px 0}
+.ncheck.done span{color:var(--muted);text-decoration:line-through}
+.ncheck.done .chk{background:var(--ok);border-color:var(--ok)}
+.nimgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:10px}
+.nimgs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:zoom-in;background:var(--input)}
+.nfiles{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.nfile{display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--card) 70%,transparent);border:1px solid var(--line);border-radius:9px;padding:7px 10px;cursor:pointer;text-align:left;width:100%}
+.nfile:hover{border-color:var(--accent)}
+.nfile span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px}
+.nfile small{color:var(--muted);font-size:12px}
+.nfoot{margin-top:10px;color:var(--muted);font-size:12px}
+.modal.wide{width:min(640px,100%);max-height:92vh;overflow:auto}
+.nerow{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.nerow input{flex:1}
+.sw.none{background:var(--card);border:2px solid var(--line)}
+.sug{border:1px solid var(--danger);background:transparent;color:var(--danger);border-radius:99px;padding:2px 11px;cursor:pointer;font-weight:600;margin:0 6px 4px 0}
+.sug:hover{background:var(--danger);color:#fff}
+
+/* oxford tiles */
+.otiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.otile{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.otile.ok{background:color-mix(in srgb,var(--ok) 16%,var(--card));border-color:var(--ok)}
+.otile.bad{background:color-mix(in srgb,var(--danger) 16%,var(--card));border-color:var(--danger)}
+.otile .ow{font-weight:700;font-size:17px}
+.xc{color:var(--danger);display:inline-flex;vertical-align:middle;margin-left:4px}
+.ox.bad{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
+
+.fav.letter{color:#fff;font-weight:700;border-radius:8px;line-height:1}
+.rchip{display:inline-block;padding:3px 11px;border-radius:99px;background:var(--input);border:1px solid var(--line);font-size:13px}
+.rchip.mine{background:color-mix(in srgb,var(--ok) 16%,transparent);border-color:var(--ok);color:var(--ok);font-weight:600}
+
+/* modal + toast */
+.modal-back{position:fixed;inset:0;background:rgba(8,10,18,.55);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal h3{font-size:18px;margin-bottom:4px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;z-index:40;display:flex;gap:8px;align-items:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media(max-width:640px){
+  .clock{display:none}
+  .form,.wgrid{grid-template-columns:1fr}
+  main{padding:18px 14px 60px}
+  .btn.save span{display:none}
+  .countbig{font-size:36px}
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer"></aside>
+
+<div class="topbar">
+  <button class="iconbtn" id="burger" title="Menu" aria-label="Open menu"></button>
+  <h1 id="pageTitle"></h1>
+  <div class="grow"></div>
+  <span class="clock" id="clock"></span>
+  <a class="iconbtn" id="meBtn" href="#profile" title="My profile"></a>
+  <button class="iconbtn" id="themeQuick" title="Dark / light mode" aria-label="Toggle dark mode"></button>
+  <button class="btn save" id="saveBtn" title="Save everything"></button>
+</div>
+
+<main id="view"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= basics ================= */
+const KEY = 'ielts-tracker-v1';
+const SECTIONS = [
+  {id:'listening', name:'Listening', icon:'headphones'},
+  {id:'reading',   name:'Reading',   icon:'book'},
+  {id:'writing',   name:'Writing',   icon:'pen'},
+  {id:'speaking',  name:'Speaking',  icon:'mic'}
+];
+const ACCENTS = ['#4f6bff','#0d9488','#7c3aed','#e11d48','#ea580c'];
+
+const P = {
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  headphones:'<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>',
+  book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>',
+  mic:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>',
+  words:'<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  settings:'<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  menu:'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  checkc:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+  sun:'<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  chevron:'<polyline points="6 9 12 15 18 9"/>',
+  notes:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+  clip:'<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+  share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>',
+  music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  video:'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>',
+  file:'<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>',
+  eyeoff:'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
+  eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  flag:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>'
+};
+const icon = (n,s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||''}</svg>`;
+
+function logoSvg(size=36, color){
+  const c = color || 'var(--accent)', g = 'lg' + Math.random().toString(36).slice(2,7);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-label="IELTS Tracker logo" style="flex:none"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient></defs>
+    <rect width="64" height="64" rx="16" style="fill:${c}"/><rect width="64" height="64" rx="16" fill="url(#${g})"/>
+    <path d="M14 21c6-3.2 12.5-2.6 18 1.4 5.5-4 12-4.6 18-1.4v26c-6-3.2-12.5-2.6-18 1.4-5.5-4-12-4.6-18-1.4z" fill="#fff"/>
+    <path d="M32 22.4v26" stroke="#000" stroke-opacity=".15" stroke-width="2"/>
+    <path d="M38 33l4 4 7-8" fill="none" style="stroke:${c}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const addDays = (s,n) => { const d = parse(s); d.setDate(d.getDate()+n); return ymd(d); };
+const today = () => ymd(new Date());
+const daysAgo = s => Math.round((parse(today()) - parse(s)) / 86400000);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = id => document.getElementById(id);
+const niceDate = s => parse(s).toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+/* ================= state (auto-saved) ================= */
+function load(){
+  let s = null;
+  try{ s = JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+  const existed = !!s;                              // false = brand-new user
+  if(!s) s = {};
+  if(!s.v2){ s.links = []; s.v2 = true; }          // old preset websites removed once
+  s.links = s.links || [];
+  s.weekNotes = s.weekNotes || {};
+  s.entries = s.entries || {};
+  SECTIONS.forEach(x => s.entries[x.id] = s.entries[x.id] || []);
+  s.start = s.start || today();
+  s.theme = s.theme || 'dark';
+  s.words = s.words || [];                          // {id, w, m (meaning), d (date added)}
+  s.words.forEach(x => { if(x.m === undefined) x.m = ''; });
+  s.notes = s.notes || [];                          // {id,title,desc,color,checks,files,created,updated}
+  s.posts = s.posts || [];                          // {id,text,imgs:[fileId],at}
+  s.oxford = s.oxford || {};                        // word -> '3' (Oxford 3000) | '5' (Oxford 5000)
+  s.test = s.test || null;                          // {date}
+  s.settings = Object.assign({name:'', wordGoal:10, wordTarget:8000, accent:ACCENTS[0], oxShow:false}, s.settings||{});
+  if(!s.v3){ if(s.settings.wordTarget === 3000) s.settings.wordTarget = 8000; s.v3 = true; }
+  s.profile = Object.assign({name:'', pfp:'', banner:'', bio:'', birth:'', links:[], wishes:[]}, s.profile||{});
+  if(!s.profile.name && s.settings.name) s.profile.name = s.settings.name;
+  if(s.onboarded === undefined) s.onboarded = existed;   // only brand-new users are asked for a name
+  return s;
+}
+let state = load();
+let savedTimer;
+function flashSaved(){
+  const b = $('saveBtn'); if(!b) return;
+  b.classList.add('ok'); b.innerHTML = icon('check',17) + '<span>Saved</span>';
+  clearTimeout(savedTimer);
+  savedTimer = setTimeout(() => { b.classList.remove('ok'); b.innerHTML = icon('save',17) + '<span>Save</span>'; }, 1600);
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); flashSaved(); }
+  catch(e){ alert('Could not save in this browser.'); }
+}
+let toastTimer;
+function toast(msg){
+  const t = $('toast'); t.innerHTML = icon('check',16) + esc(msg); t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+/* ---------- file storage (IndexedDB: notes files, banner, post photos) ---------- */
+const FDB = {
+  db:null,
+  open(){
+    if(this.db) return Promise.resolve(this.db);
+    return new Promise((res,rej)=>{
+      if(!window.indexedDB) return rej(new Error('IndexedDB is not available'));
+      const r = indexedDB.open('ielts-tracker-files',1);
+      r.onupgradeneeded = () => r.result.createObjectStore('files');
+      r.onsuccess = () => { this.db = r.result; res(this.db); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async tx(mode, fn){
+    const db = await this.open();
+    return new Promise((res,rej)=>{
+      const t = db.transaction('files',mode), req = fn(t.objectStore('files'));
+      t.oncomplete = () => res(req && req.result);
+      t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  },
+  put(id,blob){ return this.tx('readwrite', s=>s.put(blob,id)); },
+  get(id){ return this.tx('readonly', s=>s.get(id)); },
+  del(id){ return this.tx('readwrite', s=>s.delete(id)); },
+  clear(){ return this.tx('readwrite', s=>s.clear()); }
+};
+const newFid = () => 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const urlCache = {};
+async function fileUrl(id){
+  if(urlCache[id]) return urlCache[id];
+  const b = await FDB.get(id); if(!b) return '';
+  return urlCache[id] = URL.createObjectURL(b);
+}
+function hydrate(root){
+  (root||document).querySelectorAll('[data-fid]').forEach(async el => {
+    const u = await fileUrl(el.dataset.fid).catch(()=> ''); if(!u) return;
+    if(el.tagName==='IMG') el.src = u; else el.style.backgroundImage = `url("${u}")`;
+  });
+}
+function imgToBlob(file, maxW, maxH, cover, q=0.85){
+  return new Promise((res,rej)=>{
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      let sx=0, sy=0, sw=img.width, sh=img.height, cw, ch;
+      if(cover){ cw = maxW; ch = maxH; const ar = maxW/maxH;
+        if(sw/sh > ar){ const nw = sh*ar; sx = (sw-nw)/2; sw = nw; } else { const nh = sw/ar; sy = (sh-nh)/2; sh = nh; } }
+      else { const k = Math.min(1, maxW/sw, maxH/sh); cw = Math.round(sw*k); ch = Math.round(sh*k); }
+      const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0,0,cw,ch); g.drawImage(img,sx,sy,sw,sh,0,0,cw,ch);
+      c.toBlob(b => { URL.revokeObjectURL(url); b ? res(b) : rej(new Error('encode')); }, 'image/jpeg', q);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('image')); };
+    img.src = url;
+  });
+}
+const fmtSize = n => n < 1024 ? n+' B' : n < 1048576 ? (n/1024).toFixed(0)+' KB' : (n/1048576).toFixed(1)+' MB';
+const fileIcon = t => t.startsWith('image/') ? 'image' : t.startsWith('audio/') ? 'music' : t.startsWith('video/') ? 'video' : 'file';
+function downloadText(text, filename, type='text/html'){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type}));
+  a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function trackerSource(){
+  const c = document.documentElement.cloneNode(true);
+  c.removeAttribute('data-theme'); c.removeAttribute('style');
+  c.querySelectorAll('.modal-back').forEach(n => n.remove());
+  ['drawer','pageTitle','clock','view','burger','themeQuick','meBtn','saveBtn','toast'].forEach(id => {
+    const n = c.querySelector('#'+id);
+    if(n){ n.innerHTML = ''; n.classList.remove('show','ok'); n.removeAttribute('style'); }
+  });
+  const ov = c.querySelector('#overlay'); if(ov) ov.classList.remove('show');
+  const t = c.querySelector('title'); if(t) t.textContent = 'IELTS Tracker';
+  return '<!doctype html>\n' + c.outerHTML;
+}
+async function gzipB64(text){
+  const cs = new CompressionStream('gzip'), w = cs.writable.getWriter();
+  w.write(new TextEncoder().encode(text)); w.close();
+  const u = new Uint8Array(await new Response(cs.readable).arrayBuffer());
+  let bin = ''; for(let i=0;i<u.length;i+=0x8000) bin += String.fromCharCode.apply(null, u.subarray(i,i+0x8000));
+  return btoa(bin);
+}
+const loaderHtml = z => '<!doctype html><html><head><meta charset="utf-8"><title>IELTS Tracker</title></head><body style="background:#0c0f16"><script>(async()=>{const b=atob("' + z + '"),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);const t=await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream("gzip"))).text();document.open();document.write(t);document.close();})();<\/script></body></html>';
+const slug = t => (t||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'profile';
+async function openViewer(f){
+  const b = await FDB.get(f.id).catch(()=>null);
+  if(!b){ alert('This file could not be found in this browser.'); return; }
+  const url = URL.createObjectURL(b), type = f.type || b.type || '';
+  let body;
+  if(type.startsWith('image/')) body = `<img src="${url}" alt="" style="max-width:100%;max-height:70vh;border-radius:10px;display:block;margin:0 auto">`;
+  else if(type.startsWith('video/')) body = `<video src="${url}" controls style="max-width:100%;max-height:70vh;border-radius:10px;display:block;margin:0 auto"></video><div class="sub" style="margin-top:8px">If this video does not play (for example some .mov files), press Download.</div>`;
+  else if(type.startsWith('audio/')) body = `<audio src="${url}" controls style="width:100%"></audio>`;
+  else if(type==='application/pdf') body = `<iframe src="${url}" style="width:100%;height:70vh;border:0;border-radius:10px;background:#fff"></iframe>`;
+  else body = `<div class="empty">This file type cannot be previewed here. Press Download to open it.</div>`;
+  const back = document.createElement('div'); back.className = 'modal-back';
+  back.innerHTML = `<div class="modal card wide"><div class="row" style="margin-bottom:12px"><h3 style="word-break:break-all">${esc(f.name||'File')}</h3>
+    <div style="display:flex;gap:8px"><a class="btn primary" href="${url}" download="${esc(f.name||'file')}">${icon('download',16)} Download</a><button class="btn" id="vClose">Close</button></div></div>${body}</div>`;
+  document.body.appendChild(back);
+  const close = () => { back.remove(); URL.revokeObjectURL(url); };
+  back.onclick = e => { if(e.target===back) close(); };
+  back.querySelector('#vClose').onclick = close;
+}
+
+const userName = () => (state.profile.name || '').trim();
+let pfpUrl = '';
+async function loadPfp(){
+  const id = state.profile.pfp;
+  if(!id || id.startsWith('data:')){ pfpUrl = ''; return; }
+  try{ pfpUrl = await fileUrl(id); }catch(e){ pfpUrl = ''; }
+}
+function avatarHtml(size=36){
+  const p = state.profile, st = `width:${size}px;height:${size}px;font-size:${Math.round(size*.4)}px`;
+  const src = !p.pfp ? '' : p.pfp.startsWith('data:') ? p.pfp : pfpUrl;
+  if(src) return `<img class="avatar" style="${st}" src="${esc(src)}" alt="">`;
+  const ini = userName().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+  return `<span class="avatar" style="${st}">${ini ? esc(ini) : icon('user',Math.round(size*.5))}</span>`;
+}
+function ageInfo(b){
+  if(!b) return null;
+  const bd = parse(b), now = new Date(), t0 = parse(today());
+  let age = now.getFullYear() - bd.getFullYear();
+  if(now.getMonth() < bd.getMonth() || (now.getMonth()===bd.getMonth() && now.getDate() < bd.getDate())) age--;
+  if(isNaN(age) || age < 0) return null;
+  let nb = new Date(now.getFullYear(), bd.getMonth(), bd.getDate());
+  if(nb < t0) nb = new Date(now.getFullYear()+1, bd.getMonth(), bd.getDate());
+  return {age, days: Math.round((nb - t0)/86400000)};
+}
+function refreshChrome(){ applyLook(); buildDrawer(current, curMonth); }
+window.addEventListener('storage', e => { if(e.key===KEY){ state = load(); applyLook(); render(); loadPfp().then(()=>{ applyLook(); render(); }); } });
+
+/* ================= date colours ================= */
+function ageColor(d){
+  const n = daysAgo(d);
+  const hues = [135,50,32,24,16,8,0];
+  return `hsl(${hues[Math.max(0,Math.min(n,6))]} 85% ${state.theme==='dark'?58:38}%)`;
+}
+const ageLabel = d => { const n = daysAgo(d); return n<=0 ? 'Today' : n===1 ? 'Yesterday' : n+' days ago'; };
+const dateHtml = d => `<span class="date" style="color:${ageColor(d)}">${esc(d)} · ${ageLabel(d)}</span>`;
+
+/* ================= look & feel ================= */
+function applyLook(){
+  document.documentElement.setAttribute('data-theme', state.theme);
+  document.documentElement.style.setProperty('--accent', state.settings.accent);
+  $('burger').innerHTML = icon('menu',20);
+  $('themeQuick').innerHTML = icon(state.theme==='dark'?'sun':'moon',18);
+  $('meBtn').innerHTML = avatarHtml(38);
+  if(!$('saveBtn').classList.contains('ok')) $('saveBtn').innerHTML = icon('save',17) + '<span>Save</span>';
+}
+function setTheme(t){ state.theme = t; save(); applyLook(); render(); }
+$('themeQuick').onclick = () => setTheme(state.theme==='dark' ? 'light' : 'dark');
+$('saveBtn').onclick = () => save();
+
+/* ================= test countdown ================= */
+function testInfo(){
+  const t = state.test; if(!t || !t.date) return null;
+  const days = Math.round((parse(t.date) - parse(today())) / 86400000);
+  let num, label, color;
+  if(days > 0){ num = String(days); label = days===1 ? 'day left' : 'days left'; color = days<=7 ? 'hsl(0 85% 55%)' : days<=30 ? 'hsl(28 90% 52%)' : 'hsl(135 60% 42%)'; }
+  else if(days === 0){ num = 'Today'; label = 'is your test day'; color = 'hsl(0 85% 55%)'; }
+  else { num = '–'; label = 'test date has passed'; color = 'var(--muted)'; }
+  return {date:t.date, days, num, label, color};
+}
+function showTestModal(){
+  const t = state.test || {};
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `<div class="modal card">
+    <h3>My IELTS test date</h3>
+    <div class="sub">Choose the day of your test. The app counts the days for you.</div>
+    <label class="field" style="margin-top:16px">Test date<input type="date" id="tDate" value="${esc(t.date||'')}"></label>
+    <div class="btns" style="margin-top:18px">
+      <button class="btn primary big" id="tSave">${icon('save',18)} Save</button>
+      ${t.date ? '<button class="btn danger" id="tDel">Remove</button>' : ''}
+      <button class="btn" id="tCancel">Cancel</button>
+    </div></div>`;
+  document.body.appendChild(back);
+  const close = () => back.remove();
+  back.onclick = e => { if(e.target===back) close(); };
+  $('tCancel').onclick = close;
+  $('tSave').onclick = () => {
+    const v = $('tDate').value; if(!v) return $('tDate').focus();
+    state.test = {date:v}; save(); close(); render(); toast('Test date saved');
+  };
+  if($('tDel')) $('tDel').onclick = () => { state.test = null; save(); close(); render(); };
+  $('tDate').focus();
+}
+
+/* ================= months ================= */
+function allEntries(){ return SECTIONS.flatMap(s => state.entries[s.id].map(e => ({...e, sec:s}))); }
+function curMonthIdx(){ const d = daysAgo(state.start); return d < 0 ? 1 : Math.floor(d/28) + 1; }
+function weekStats(k=1){
+  const all = allEntries();
+  return [1,2,3,4].map(j=>{
+    const w = (k-1)*4 + j;
+    const from = addDays(state.start,(w-1)*7), to = addDays(from,6);
+    const inWeek = all.filter(e => e.date>=from && e.date<=to).sort((a,b)=>a.date.localeCompare(b.date));
+    const words = state.words.filter(x => x.d && x.d>=from && x.d<=to).sort((a,b)=>a.d.localeCompare(b.d));
+    const note = state.weekNotes[w] || '';
+    return {w, j, from, to, inWeek, words, note, saved: inWeek.length>0 || words.length>0 || note.trim().length>0};
+  });
+}
+function monthInfo(k){
+  const ws = weekStats(k);
+  const name = parse(addDays(state.start,(k-1)*28)).toLocaleDateString(undefined,{month:'long'});
+  return {k, name, ws, left: ws.filter(x => x.to >= today()).length, saved: ws.filter(x => x.saved).length};
+}
+function monthsToShow(){
+  let m = Math.max(1, curMonthIdx());
+  for(const key in state.weekNotes){ if((state.weekNotes[key]||'').trim()) m = Math.max(m, Math.ceil(+key/4)); }
+  allEntries().forEach(e => { const d = Math.floor((parse(e.date)-parse(state.start))/86400000); if(d>=0) m = Math.max(m, Math.floor(d/28)+1); });
+  state.words.forEach(x => { if(!x.d) return; const d = Math.floor((parse(x.d)-parse(state.start))/86400000); if(d>=0) m = Math.max(m, Math.floor(d/28)+1); });
+  return Array.from({length:Math.min(m,36)}, (_,i) => i+1);
+}
+const monthSub = m => `${m.left} week${m.left===1?'':'s'} left · ${m.saved} saved`;
+
+/* ================= navigation (hamburger) ================= */
+const NAV = [
+  {label:'Overview', items:[{id:'dashboard',name:'Dashboard',icon:'home'}]},
+  {label:'IELTS practice', items: SECTIONS.map(s=>({id:s.id,name:s.name,icon:s.icon}))},
+  {label:'Study', items:[{id:'words',name:'Vocabulary',icon:'words'},{id:'oxford',name:'Oxford words',icon:'checkc'},{id:'notes',name:'Notes',icon:'notes'},{id:'links',name:'Quick links',icon:'link'}]},
+  {label:'Months', months:true},
+  {label:'System', items:[{id:'profile',name:'My profile',icon:'user'},{id:'settings',name:'Settings',icon:'settings'}]}
+];
+const ALL_VIEWS = NAV.flatMap(g => g.items || []);
+function buildDrawer(cur, mk){
+  const t = testInfo();
+  const testTxt = !t ? 'Not set yet' : t.days>0 ? `${t.days} day${t.days===1?'':'s'} left` : t.days===0 ? 'Test day is today!' : 'Date has passed';
+  $('drawer').innerHTML = `
+    <div class="brand">${logoSvg(38)}<div><b>IELTS Tracker</b><small>Study dashboard</small></div></div>
+    <a class="profile-row" href="#profile">${avatarHtml(40)}<div><b>${userName() ? esc(userName()) : 'Add your name'}</b><small>View my profile</small></div></a>
+    <div class="testbox">
+      <div><small>Days until my test</small><b>${testTxt}</b></div>
+      <button class="plus" id="dTest" title="${t?'Change test date':'Add test date'}" aria-label="Add test date">${icon('plus',20)}</button>
+    </div>
+    ${NAV.map(g => {
+      if(g.months){
+        return `<div class="nav-label">Months</div>` + monthsToShow().map(k => { const m = monthInfo(k);
+          return `<a class="nav ${cur==='month'&&mk===k?'active':''}" href="#month-${k}">${icon('calendar',18)}<span class="ntxt"><span>Month ${k} · ${esc(m.name)}</span><small>${monthSub(m)}</small></span></a>`; }).join('');
+      }
+      return `<div class="nav-label">${g.label}</div>` + g.items.map(i =>
+        `<a class="nav ${i.id===cur?'active':''}" href="#${i.id}">${icon(i.icon,18)}<span>${i.name}</span></a>`).join('');
+    }).join('')}
+    <div class="drawer-foot">Press Save at the top any time. Your changes are also saved automatically in this browser.</div>`;
+  $('dTest').onclick = () => { closeMenu(); showTestModal(); };
+}
+const openMenu = () => { $('drawer').classList.add('show'); $('overlay').classList.add('show'); };
+const closeMenu = () => { $('drawer').classList.remove('show'); $('overlay').classList.remove('show'); };
+$('burger').onclick = openMenu;
+$('overlay').onclick = closeMenu;
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeMenu(); document.querySelectorAll('.modal-back:not(.sticky)').forEach(m=>m.remove()); } });
+window.addEventListener('hashchange', () => { closeMenu(); render(); window.scrollTo(0,0); });
+
+/* ================= clock ================= */
+let lastDay = today();
+function tick(){
+  const n = new Date();
+  $('clock').textContent = n.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'}) + ' · ' + n.toLocaleTimeString();
+  if(today()!==lastDay){ lastDay = today(); render(); }
+}
+setInterval(tick, 1000);
+
+/* ================= website icons ================= */
+function favSources(l){
+  const out = [];
+  if(l.img) out.push(l.img);
+  let host = ''; try{ host = new URL(l.url).hostname; }catch(e){}
+  if(host) out.push(`https://${host}/favicon.ico`, `https://icons.duckduckgo.com/ip3/${host}.ico`, `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`);
+  return out;
+}
+function letterTile(name,size){
+  const t = (name||'?').trim(), ch = (t[0]||'?').toUpperCase();
+  const hue = [...t].reduce((a,c)=>a+c.charCodeAt(0),0) % 360;
+  return `<span class="fav letter" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.55)}px;background:hsl(${hue} 55% 42%)">${esc(ch)}</span>`;
+}
+function favNext(img){
+  let srcs = []; try{ srcs = JSON.parse(img.dataset.srcs); }catch(e){}
+  const i = (+img.dataset.i||0) + 1;
+  if(i < srcs.length){ img.dataset.i = i; img.src = srcs[i]; }
+  else img.outerHTML = letterTile(img.dataset.name, parseInt(img.style.width)||18);
+}
+function favHtml(l,size=18){
+  const srcs = favSources(l);
+  if(!srcs.length) return letterTile(l.name,size);
+  return `<img class="fav" style="width:${size}px;height:${size}px" src="${esc(srcs[0])}" data-i="0" data-srcs="${esc(JSON.stringify(srcs))}" data-name="${esc(l.name)}" alt="" referrerpolicy="no-referrer" onerror="favNext(this)">`;
+}
+const favByName = (name,size=14) => { const l = state.links.find(x=>x.name===name); return l ? favHtml(l,size) : letterTile(name,size); };
+
+/* ================= Oxford reference check ================= */
+const norm = s => String(s||'').toLowerCase().replace(/\(.*?\)/g,'').replace(/[^a-z0-9' -]/g,'').trim().replace(/\s+/g,' ');
+function stems(w){
+  const s = [w]; const add = x => { if(x && x.length>1 && !s.includes(x)) s.push(x); };
+  if(w.endsWith('ies')) add(w.slice(0,-3)+'y');
+  if(w.endsWith('ied')) add(w.slice(0,-3)+'y');
+  if(w.endsWith('es')) add(w.slice(0,-2));
+  if(w.endsWith('s')) add(w.slice(0,-1));
+  if(w.endsWith('ed')){ const b = w.slice(0,-2); add(b); add(w.slice(0,-1)); if(b.length>2 && b.at(-1)===b.at(-2)) add(b.slice(0,-1)); }
+  if(w.endsWith('ing')){ const b = w.slice(0,-3); add(b); add(b+'e'); if(b.length>2 && b.at(-1)===b.at(-2)) add(b.slice(0,-1)); }
+  if(w.endsWith('ly')) add(w.slice(0,-2));
+  if(w.endsWith('er')) add(w.slice(0,-2));
+  return s;
+}
+function oxLoaded(){ for(const k in state.oxford) return true; return false; }
+function oxCheck(word){
+  if(!oxLoaded()) return {loaded:false};
+  const n = norm(word); if(!n) return {loaded:true, found:false};
+  for(const c of stems(n)){ const v = state.oxford[c]; if(v) return {loaded:true, found:true, key:c, t:v==='3'?'3000':'5000', exact:c===n}; }
+  return {loaded:true, found:false};
+}
+function oxCounts(){ let a=0,b=0; for(const k in state.oxford){ state.oxford[k]==='3' ? a++ : b++; } return {a,b,n:a+b}; }
+
+const POS = /^(n|v|adj|adv|prep|conj|pron|det|exclam|number|modal|auxiliary|indefinite|definite|infinitive|abbr|symbol|noun|verb|adjective|adverb|preposition|conjunction|pronoun|determiner|exclamation)\.?,?$/i;
+const LVL = /^(A1|A2|B1|B2|C1|C2)$/i;
+function parseWords(text){
+  const out = [];
+  text = text.replace(/\r/g,'');
+  const multi = text.includes('\n');
+  const lines = multi ? text.split('\n') : text.split(/[,;]/);
+  lines.forEach(raw=>{
+    let line = raw.trim().replace(/^\d+[.)]\s+/,'').replace(/^[-•*]\s*/,'');
+    if(!line) return;
+    let w='', l='';
+    if(multi && /^[^\s,;\t]+[,;\t]/.test(line)){
+      const cells = line.split(/[,;\t]/).map(c=>c.trim());
+      w = cells[0]; l = (cells.find(c=>LVL.test(c))||'').toUpperCase();
+    }else{
+      const toks = line.split(/\s+/); const wt = [];
+      for(const t of toks){ if(LVL.test(t)) break; if(POS.test(t) && wt.length) break; wt.push(t); }
+      w = wt.join(' ').replace(/[,;]+$/,'');
+      l = (toks.find(t=>LVL.test(t))||'').toUpperCase();
+    }
+    if(w && w.length<=40 && !LVL.test(w)) out.push({w,l});
+  });
+  return out;
+}
+function importOxford(text, list){
+  const parsed = parseWords(text); let added = 0;
+  parsed.forEach(p => {
+    const k = norm(p.w); if(!k) return;
+    const cur = state.oxford[k];
+    if(!cur){ state.oxford[k] = list; added++; }
+    else if(cur==='5' && list==='3'){ state.oxford[k] = '3'; added++; }
+  });
+  save();
+  return {added, total:parsed.length};
+}
+
+/* ================= stats helpers ================= */
+function secStats(id){
+  const list = [...state.entries[id]].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const sc = list.map(e=>e.score);
+  return {list, count:list.length,
+    avg: sc.length ? (sc.reduce((a,b)=>a+b,0)/sc.length).toFixed(1) : '–',
+    best: sc.length ? Math.max(...sc) : '–',
+    last: sc.length ? list[0].score : '–'};
+}
+function wordStats(){
+  const L = state.words.filter(x=>x.d);
+  const days = [];
+  for(let i=6;i>=0;i--){ const d = addDays(today(),-i); days.push({d, n:L.filter(x=>x.d===d).length}); }
+  return {total:state.words.length, learned:L.length,
+    day:L.filter(x=>x.d===today()).length,
+    w7:L.filter(x=>daysAgo(x.d)<=6).length,
+    w30:L.filter(x=>daysAgo(x.d)<=29).length,
+    ox:state.words.filter(x=>oxCheck(x.w).found).length, days};
+}
+const greeting = () => { const h = new Date().getHours(); return h<12?'Good morning':h<18?'Good afternoon':'Good evening'; };
+
+/* ================= router ================= */
+let current = 'dashboard', curMonth = 1;
+const openWeeks = {};
+function render(){
+  const raw = (location.hash||'#dashboard').slice(1);
+  const mm = raw.match(/^month(?:-(\d+))?$/);
+  let v, title;
+  if(mm){
+    curMonth = mm[1] ? Math.max(1,+mm[1]) : curMonthIdx();
+    current = 'month'; title = `Month ${curMonth} · ${monthInfo(curMonth).name}`;
+  }else{
+    v = ALL_VIEWS.find(x=>x.id===raw) || ALL_VIEWS[0];
+    current = v.id; title = v.name;
+  }
+  $('pageTitle').textContent = title;
+  document.title = title + ' · IELTS Tracker';
+  buildDrawer(current, curMonth);
+  const el = $('view');
+  if(current==='month') viewMonth(el, curMonth);
+  else if(SECTIONS.some(s=>s.id===current)) viewSkill(el,current);
+  else ({dashboard:viewDashboard, words:viewWords, links:viewLinks, notes:viewNotes, oxford:viewOxford, profile:viewProfile, settings:viewSettings})[current](el);
+  hydrate($('view'));
+  tick();
+  if(!state.onboarded) showWelcome();
+}
+
+/* ================= dashboard ================= */
+function viewDashboard(el){
+  const ws = wordStats(), t = testInfo();
+  const recent = allEntries().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).slice(0,8);
+  const cm = curMonthIdx(), mi = monthInfo(cm);
+  const target = Math.max(1,state.settings.wordTarget);
+  const pct = Math.min(100, Math.round(ws.learned/target*100));
+  const dpct = Math.min(100, Math.round(ws.day/Math.max(1,state.settings.wordGoal)*100));
+  el.innerHTML = `
+  <div class="page-head"><div>
+    <h2>${greeting()}${userName()?', '+esc(userName()):''}</h2>
+    <div class="sub">Here is your IELTS progress at a glance.</div></div></div>
+
+  <div class="card hero">
+    <div>
+      <div class="sub">Days until my IELTS test</div>
+      ${t ? `<div class="countbig" style="color:${t.color}">${t.num}<small>${t.label}</small></div><div class="sub">${niceDate(t.date)}</div>`
+          : `<div class="countbig" style="font-size:24px;color:var(--muted)">No test date yet</div><div class="sub">Press + to add your test date</div>`}
+    </div>
+    <button class="plus" id="hTest" style="width:44px;height:44px" title="${t?'Change test date':'Add test date'}">${icon(t?'edit':'plus',22)}</button>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:16px">
+    ${SECTIONS.map(s=>{ const st = secStats(s.id); return `
+    <a class="card skill" href="#${s.id}">
+      <div class="top"><div class="badge-ic">${icon(s.icon,18)}</div><b>${s.name}</b></div>
+      <div class="big">${st.last}</div>
+      <div class="mini"><span>Avg ${st.avg}</span><span>Best ${st.best}</span><span>${st.count} tests</span></div>
+      <div class="sub" style="margin-top:8px">${st.count?dateHtml(st.list[0].date):'No scores yet'}</div>
+    </a>`; }).join('')}
+  </div>
+
+  <div class="grid g2" style="margin-bottom:16px">
+    <a class="card skill" href="#words">
+      <div class="top"><div class="badge-ic">${icon('words',18)}</div><b>Vocabulary</b></div>
+      <div class="big">${ws.learned}<small class="sub" style="font-size:14px;font-weight:500"> / ${target} words</small></div>
+      <div class="progress"><i style="width:${pct}%"></i></div>
+      <div class="goalline"><span>Today ${ws.day} / ${state.settings.wordGoal}</span><span>Last 7 days: ${ws.w7}</span></div>
+      <div class="progress"><i style="width:${dpct}%"></i></div>
+    </a>
+    <a class="card skill" href="#month-${cm}">
+      <div class="top"><div class="badge-ic">${icon('calendar',18)}</div><b>Month ${cm} · ${esc(mi.name)}</b></div>
+      <div class="big">${mi.saved}<small class="sub" style="font-size:14px;font-weight:500"> / 4 weeks saved</small></div>
+      <div class="progress"><i style="width:${mi.saved*25}%"></i></div>
+      <div class="sub" style="margin-top:8px">${mi.left} week${mi.left===1?'':'s'} left</div>
+    </a>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Recent activity</h3>
+      ${recent.length ? recent.map(e=>`
+        <div class="entry"><div class="score">${e.score}</div>
+          <div class="meta">${dateHtml(e.date)}<div class="site">${esc(e.sec.name)} · ${esc(e.site)}</div></div><span></span></div>`).join('')
+        : '<div class="empty">No scores saved yet. Open a section from the menu and press Add score.</div>'}
+    </div>
+    <div class="card">
+      <div class="row"><h3>Quick links</h3><a class="sub" href="#links">Manage</a></div>
+      <div class="chips" style="margin-top:12px">
+        ${state.links.map(l=>`<a class="chip" href="${esc(l.url)}" target="_blank" rel="noopener">${favHtml(l,16)}${esc(l.name)}</a>`).join('')
+          || '<span class="sub">No websites yet. Add some in Quick links.</span>'}
+      </div>
+      <div class="legend" style="margin-top:22px">
+        <b style="color:var(--text);font-weight:600">Date colours</b>
+        <span><i class="dot" style="background:hsl(135 85% 50%)"></i>Today</span>
+        <span><i class="dot" style="background:hsl(50 85% 50%)"></i>Yesterday</span>
+        <span><i class="dot" style="background:hsl(24 85% 50%)"></i>Older</span>
+        <span><i class="dot" style="background:hsl(0 85% 50%)"></i>6+ days</span>
+      </div>
+    </div>
+  </div>`;
+  $('hTest').onclick = showTestModal;
+}
+
+/* ================= IELTS skill pages ================= */
+const openForms = {};
+let editing = null;
+function spark(list){
+  const pts = [...list].reverse().slice(-12);
+  if(pts.length<2) return '';
+  const w=300,h=70,p=8;
+  const x = i => p + i*(w-2*p)/(pts.length-1);
+  const y = v => h-p-(v/9)*(h-2*p);
+  return `<div class="card" style="margin-bottom:16px"><h3>Score trend</h3><div class="sub" style="margin-bottom:6px">Last ${pts.length} tests</div>
+    <svg class="spark" viewBox="0 0 ${w} ${h}"><path d="${pts.map((e,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(e.score).toFixed(1)}`).join(' ')}"/>
+    ${pts.map((e,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(e.score).toFixed(1)}" r="3.2"/>`).join('')}</svg></div>`;
+}
+function viewSkill(el,id){
+  const s = SECTIONS.find(x=>x.id===id), st = secStats(id);
+  const open = !!openForms[id], isEdit = editing && editing.sec===id;
+  el.innerHTML = `
+  <div class="page-head"><div><h2>${s.name}</h2>
+    <div class="sub">${st.count?'Last practice: '+dateHtml(st.list[0].date):'No scores saved yet'}</div></div>
+    <button class="btn primary" id="addBtn">${icon(open?'x':'plus',16)} ${open?'Close':'Add score'}</button></div>
+
+  <div class="stats">
+    <div class="st"><span>Last score</span><b>${st.last}</b></div>
+    <div class="st"><span>Average</span><b>${st.avg}</b></div>
+    <div class="st"><span>Best</span><b>${st.best}</b></div>
+    <div class="st"><span>Tests</span><b>${st.count}</b></div>
+  </div>
+
+  <form class="form card ${open?'open':''}" id="sf">
+    <label class="field">Score (0 to 9)<input type="number" name="score" min="0" max="9" step="0.5" required></label>
+    <label class="field">Date<input type="date" name="date" value="${today()}" required></label>
+    <label class="field full">Website
+      <input type="text" name="site" list="dl" placeholder="Pick a saved website or type one" autocomplete="off"></label>
+    <datalist id="dl">${state.links.map(l=>`<option value="${esc(l.name)}">`).join('')}</datalist>
+    <label class="field full">Note (optional)<input type="text" name="note" placeholder="e.g. Test 3, Section 2"></label>
+    <div class="btns"><button class="btn primary big" type="submit">${icon('save',18)} Save</button>
+      <button class="btn" type="button" id="cancelBtn">Cancel</button></div>
+  </form>
+
+  ${spark(st.list)}
+
+  <div class="card">
+    <h3>History</h3>
+    ${st.list.map(e=>`
+      <div class="entry"><div class="score">${e.score}</div>
+        <div class="meta">${dateHtml(e.date)}
+          <div class="site">${favByName(e.site)} ${esc(e.site)}</div>
+          ${e.note?`<div class="note">${esc(e.note)}</div>`:''}</div>
+        <div><button class="ico" data-edit="${e.id}" title="Edit">${icon('edit',16)}</button><button class="ico del" data-del="${e.id}" title="Delete">${icon('trash',16)}</button></div>
+      </div>`).join('') || '<div class="empty">Press <b>Add score</b> to save your first result.</div>'}
+  </div>`;
+
+  const f = $('sf');
+  if(isEdit){
+    const en = state.entries[id].find(x=>x.id===editing.id);
+    if(en){ f.elements.score.value=en.score; f.elements.date.value=en.date; f.elements.site.value=en.site; f.elements.note.value=en.note||''; }
+  }
+  const close = () => { openForms[id]=false; editing=null; viewSkill(el,id); };
+  $('addBtn').onclick = () => { if(openForms[id]) close(); else { editing=null; openForms[id]=true; viewSkill(el,id); } };
+  $('cancelBtn').onclick = close;
+  f.onsubmit = ev => {
+    ev.preventDefault();
+    const score = parseFloat(f.elements.score.value);
+    if(isNaN(score)||score<0||score>9) return alert('Score must be between 0 and 9.');
+    const data = {score, date:f.elements.date.value, site:f.elements.site.value.trim()||'Other', note:f.elements.note.value.trim()};
+    if(isEdit){ const en = state.entries[id].find(x=>x.id===editing.id); if(en) Object.assign(en,data); }
+    else state.entries[id].push({id:Date.now(),...data});
+    openForms[id]=false; editing=null; save(); viewSkill(el,id); buildDrawer(current,curMonth); toast('Saved');
+  };
+  el.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { editing={sec:id,id:Number(b.dataset.edit)}; openForms[id]=true; viewSkill(el,id); window.scrollTo({top:0,behavior:'smooth'}); });
+  el.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    if(!confirm('Delete this score?')) return;
+    state.entries[id] = state.entries[id].filter(e=>String(e.id)!==b.dataset.del);
+    save(); viewSkill(el,id); buildDrawer(current,curMonth);
+  });
+}
+
+/* ================= vocabulary ================= */
+let wq='', wf='all', wlimit=100, wEdit=-1, wNote='', oxSel='3', oxNote='', oxOpen=false;
+function oxBadgeHtml(word){
+  if(!word.trim()) return '';
+  const r = oxCheck(word);
+  if(!r.loaded) return `<span class="ox none">Open “Oxford words” in the menu and load the lists to get a green check.</span>`;
+  if(r.found) return `<span class="ox yes">${icon('checkc',16)} In the Oxford ${r.t}${r.exact?'':` (as “${esc(r.key)}”)`}</span>`;
+  return `<span class="ox no">Not found in the Oxford 3000 / 5000</span>`;
+}
+function renderWordStats(){
+  const box = $('wstats'); if(!box) return;
+  const ws = wordStats(), g = state.settings.wordGoal, t = Math.max(1,state.settings.wordTarget);
+  const max = Math.max(g, ...ws.days.map(x=>x.n), 1);
+  box.innerHTML = `
+  <div class="stats">
+    <div class="st"><span>My list</span><b>${ws.total}</b><small>/ ${t} words</small>
+      <div class="progress"><i style="width:${Math.min(100,ws.total/t*100)}%"></i></div></div>
+    <div class="st"><span>Today</span><b>${ws.day}</b><small>/ ${g} goal</small>
+      <div class="progress"><i style="width:${Math.min(100,ws.day/Math.max(1,g)*100)}%"></i></div></div>
+    <div class="st"><span>Last 7 days</span><b>${ws.w7}</b><small>words</small></div>
+    <div class="st"><span>Last 30 days</span><b>${ws.w30}</b><small>words</small></div>
+    <div class="st"><span>Oxford ✓</span><b style="color:var(--ok)">${ws.ox}</b><small>checked</small></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>Words added per day</h3><div class="sub">Last 7 days</div>
+    <div class="bars">${ws.days.map((x,i)=>`
+      <div class="bar ${i===6?'today':''}"><em>${x.n}</em><i style="height:${Math.max(3,x.n/max*80)}%"></i>
+      <span>${parse(x.d).toLocaleDateString(undefined,{weekday:'short'})}</span></div>`).join('')}</div>
+  </div>`;
+}
+function renderWordList(){
+  const box = $('wlist'); if(!box) return;
+  const q = wq.trim().toLowerCase(), rows = [];
+  for(let i=state.words.length-1;i>=0;i--){
+    const x = state.words[i];
+    if(q && !(x.w.toLowerCase().includes(q) || (x.m||'').toLowerCase().includes(q))) continue;
+    if(wf!=='all'){ const f = oxCheck(x.w).found; if(wf==='ox' && !f) continue; if(wf==='other' && f) continue; }
+    rows.push(i);
+  }
+  const shown = rows.slice(0,wlimit);
+  box.innerHTML = (shown.map(i=>{
+    const x = state.words[i], r = oxCheck(x.w);
+    return `<div class="wrow">
+      <span class="num">#${i+1}</span>
+      <div class="wmain">
+        <div><span class="wtxt">${esc(x.w)}</span>${r.found?`<span class="okc" title="In the Oxford ${r.t}">${icon('checkc',17)}</span><span class="lvl">${r.t}</span>`:''}</div>
+        <div class="wmean" dir="auto">${x.m?esc(x.m):'<i>no meaning yet — press edit</i>'}</div>
+      </div>
+      ${x.d?dateHtml(x.d):''}
+      <button class="ico" data-e="${i}" title="Edit">${icon('edit',16)}</button>
+      <button class="ico del" data-x="${i}" title="Delete">${icon('trash',16)}</button>
+    </div>`; }).join('')
+    || `<div class="empty">${state.words.length ? 'No words match.' : 'Your list is empty. Add your first word above.'}</div>`)
+    + (rows.length>wlimit ? `<div style="text-align:center;padding-top:12px"><button class="btn" id="moreW">Show more (${rows.length-wlimit} left)</button></div>` : '');
+  $('wcount').textContent = `${rows.length} word${rows.length===1?'':'s'}`;
+  const more = $('moreW'); if(more) more.onclick = () => { wlimit += 200; renderWordList(); };
+}
+function viewWords(el){
+  const editW = wEdit>=0 ? state.words[wEdit] : null;
+  el.innerHTML = `
+  <div class="page-head"><div><h2>Vocabulary</h2><div class="sub">Write a word and its meaning in your language. Words are checked against the Oxford 3000 and 5000.</div></div></div>
+  <div id="wstats"></div>
+
+  <form class="card" id="wf" style="margin-bottom:16px">
+    <h3 style="margin-bottom:12px">${editW?'Edit word':'Add a word'}</h3>
+    <div class="wgrid">
+      <label class="field">Word<input name="word" id="wWord" autocomplete="off" placeholder="e.g. abandon" value="${editW?esc(editW.w):''}"></label>
+      <label class="field">Meaning in my language<input name="meaning" dir="auto" autocomplete="off" placeholder="Write the meaning" value="${editW?esc(editW.m):''}"></label>
+    </div>
+    <div class="oxbadge" id="oxBadge">${editW?oxBadgeHtml(editW.w):''}</div>
+    <div class="btns">
+      <button class="btn primary big" type="submit">${icon('save',18)} Save</button>
+      ${editW?'<button class="btn" type="button" id="wCancel">Cancel</button>':''}
+    </div>
+    <div class="wmsg" id="wmsg">${esc(wNote)}</div>
+  </form>
+
+  ${oxLoaded() ? '' : `<div class="card" style="margin-bottom:16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div class="sub">The Oxford lists are not loaded yet, so words can't be checked.</div><a class="btn" href="#oxford">${icon('checkc',16)} Open Oxford words</a></div>`}
+
+  <div class="card">
+    <div class="toolbar">
+      <input class="input" id="wsearch" dir="auto" placeholder="Search words or meanings…" value="${esc(wq)}">
+      <div class="seg" id="wseg">
+        <button data-f="all" class="${wf==='all'?'on':''}">All</button>
+        <button data-f="ox" class="${wf==='ox'?'on':''}">Oxford ✓</button>
+        <button data-f="other" class="${wf==='other'?'on':''}">Other</button>
+      </div>
+      <span class="sub" id="wcount"></span>
+    </div>
+    <div id="wlist"></div>
+  </div>`;
+  renderWordStats(); renderWordList();
+
+  const f = $('wf'), msg = (t,err) => { const m = $('wmsg'); m.textContent = t; m.className = 'wmsg' + (err?' err':''); };
+  f.elements.word.oninput = e => { $('oxBadge').innerHTML = oxBadgeHtml(e.target.value); msg(''); wNote = ''; };
+  if($('wCancel')) $('wCancel').onclick = () => { wEdit = -1; wNote = ''; viewWords(el); };
+  f.onsubmit = ev => {
+    ev.preventDefault();
+    const w = f.elements.word.value.trim().replace(/\s+/g,' '), m = f.elements.meaning.value.trim();
+    if(!w) return msg('Please write the word.', true);
+    if(!m) return msg('Please write the meaning in your language.', true);
+    const dup = state.words.findIndex((x,i) => x.w.toLowerCase()===w.toLowerCase() && i!==wEdit);
+    if(dup>=0) return msg(`“${w}” is already in your list (#${dup+1}).`, true);
+    if(wEdit>=0){ const x = state.words[wEdit]; x.w = w; x.m = m; if(!x.d) x.d = today(); wNote = `Updated “${w}” ✓`; wEdit = -1; }
+    else{
+      state.words.push({id:Date.now(), w, m, d:today()});
+      const r = oxCheck(w);
+      wNote = `Saved “${w}” ✓ — word #${state.words.length} of ${state.settings.wordTarget}` + (r.found ? ` · in the Oxford ${r.t}` : '');
+    }
+    save(); viewWords(el); $('wWord').focus(); toast('Saved');
+  };
+  $('wsearch').oninput = e => { wq = e.target.value; wlimit = 100; renderWordList(); };
+  $('wseg').onclick = e => { const b = e.target.closest('button'); if(!b) return; wf = b.dataset.f; wlimit = 100;
+    $('wseg').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b)); renderWordList(); };
+  $('wlist').onclick = e => {
+    const ed = e.target.closest('[data-e]'), x = e.target.closest('[data-x]');
+    if(ed){ wEdit = +ed.dataset.e; wNote = ''; viewWords(el); window.scrollTo({top:0,behavior:'smooth'}); $('wWord').focus(); }
+    else if(x){ const i = +x.dataset.x; if(!confirm(`Delete “${state.words[i].w}”?`)) return;
+      state.words.splice(i,1); if(wEdit===i) wEdit=-1; save(); viewWords(el); }
+  };
+
+}
+
+/* ================= quick links ================= */
+let editingLink = -1, linkOpen = false;
+function viewLinks(el){
+  const l0 = editingLink>=0 ? state.links[editingLink] : {name:'',url:'',img:''};
+  el.innerHTML = `
+  <div class="page-head"><div><h2>Quick links</h2><div class="sub">Your favourite IELTS websites, one click away.</div></div>
+    <button class="btn primary" id="addLink">${icon(linkOpen?'x':'plus',16)} ${linkOpen?'Close':'Add website'}</button></div>
+  <form class="form card ${linkOpen?'open':''}" id="lf">
+    <label class="field full">Website name<input name="name" required placeholder="e.g. British Council" value="${esc(l0.name)}"></label>
+    <label class="field full">Link<input name="url" required placeholder="https://..." value="${esc(l0.url)}"></label>
+    <label class="field full">Image link (optional — leave empty to use the website's own icon)<input name="img" placeholder="https://.../logo.png" value="${esc(l0.img||'')}"></label>
+    <div class="btns"><button class="btn primary big" type="submit">${icon('save',18)} Save</button><button class="btn" type="button" id="cancelLink">Cancel</button></div>
+  </form>
+  <div class="tiles">
+    ${state.links.map((l,i)=>{ let host=''; try{ host = new URL(l.url).hostname.replace(/^www\./,''); }catch(e){}
+      return `<div class="tile"><a href="${esc(l.url)}" target="_blank" rel="noopener">${favHtml(l,30)}<b>${esc(l.name)}</b><small>${esc(host)}</small></a>
+      <div class="act"><button class="ico" data-ed="${i}" title="Edit">${icon('edit',15)}</button><button class="ico del" data-rm="${i}" title="Remove">${icon('trash',15)}</button></div></div>`; }).join('')}
+  </div>
+  ${state.links.length?'':'<div class="card empty">No websites yet. Press <b>Add website</b> to save your first one.</div>'}`;
+
+  const close = () => { editingLink=-1; linkOpen=false; viewLinks(el); };
+  $('addLink').onclick = () => { if(linkOpen) close(); else { editingLink=-1; linkOpen=true; viewLinks(el); } };
+  $('cancelLink').onclick = close;
+  $('lf').onsubmit = e => {
+    e.preventDefault();
+    const f = e.target, name = f.elements.name.value.trim(); let url = f.elements.url.value.trim();
+    if(!/^https?:\/\//i.test(url)) url = 'https://'+url;
+    const item = {name, url, img:f.elements.img.value.trim()};
+    if(editingLink>=0){
+      const old = state.links[editingLink].name; state.links[editingLink] = item;
+      if(old!==name) SECTIONS.forEach(s=>state.entries[s.id].forEach(en=>{ if(en.site===old) en.site=name; }));
+    } else state.links.push(item);
+    save(); close(); toast('Saved');
+  };
+  el.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => { editingLink=+b.dataset.ed; linkOpen=true; viewLinks(el); window.scrollTo({top:0,behavior:'smooth'}); });
+  el.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { if(!confirm('Remove this website?')) return; state.links.splice(+b.dataset.rm,1); save(); viewLinks(el); });
+}
+
+/* ================= months ================= */
+function viewMonth(el,k){
+  const mi = monthInfo(k);
+  const KINDS = [...SECTIONS.map(x=>({id:x.id,name:x.name})), {id:'words',name:'Words'}];
+  const weekCard = x => {
+    const counts = KINDS.map(c => ({...c, n: c.id==='words' ? x.words.length : x.inWeek.filter(e=>e.sec.id===c.id).length}));
+    const total = counts.reduce((a,c)=>a+c.n,0);
+    const over = x.to < today();
+    const scoreRows = x.inWeek.map(e => `
+      <div class="drow"><span class="sc">${e.score}</span>
+        <div class="main"><b>${esc(e.sec.name)}</b> · ${dateHtml(e.date)}<small>${esc(e.site)}${e.note?' · '+esc(e.note):''}</small></div></div>`).join('');
+    const wordRows = x.words.map(w => `
+      <div class="drow"><div class="main"><b>${esc(w.w)}</b><small dir="auto">${esc(w.m||'')}</small></div>${dateHtml(w.d)}</div>`).join('');
+    return `<details class="week ${x.saved?'saved':''}" ${openWeeks[x.w]?'open':''} data-w="${x.w}">
+      <summary>
+        <div class="wh">Week ${x.j} ${x.saved?`<span style="color:var(--ok);display:inline-flex">${icon('check',16)}</span>`:''}
+          ${over?'<span class="sub" style="font-weight:450">finished</span>':''}<span class="chev">${icon('chevron',18)}</span></div>
+        <div class="sub">${x.from} → ${x.to}</div>
+        <div class="cnts">${counts.map(c=>`<span class="cnt ${c.n?'on':''}">${c.name} <b>${c.n}</b></span>`).join('')}</div>
+      </summary>
+      <div class="wdet">
+        ${total ? '' : '<div class="empty" style="padding:18px 0 4px">Nothing saved in this week yet.</div>'}
+        ${x.inWeek.length ? `<h4>Scores (${x.inWeek.length})</h4>${scoreRows}` : ''}
+        ${x.words.length ? `<h4>Words saved (${x.words.length})</h4>${wordRows}` : ''}
+        ${x.note.trim() ? `<h4>My note</h4><div class="sub" style="font-size:14px;color:var(--text)">${esc(x.note)}</div>` : ''}
+      </div>
+    </details>`;
+  };
+  el.innerHTML = `
+  <div class="page-head"><div><h2>Month ${k} · ${esc(mi.name)}</h2><div class="sub">${monthSub(mi)} (of 4 weeks) · tap a week to see what you did</div></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      ${k>1?`<a class="btn" href="#month-${k-1}">← Previous</a>`:''}<a class="btn" href="#month-${k+1}">Next →</a>
+      <label class="field" style="flex-direction:row;align-items:center;gap:8px">Start date <input type="date" id="startDate" value="${esc(state.start)}"></label>
+    </div></div>
+  ${mi.ws.some(x=>x.saved) ? `<div class="grid g2">${mi.ws.filter(x=>x.saved).map(weekCard).join('')}</div>`
+    : `<div class="card empty">Nothing saved in this month yet.<br>Save a score or a word and its week will appear here.</div>`}`;
+  $('startDate').onchange = e => { if(e.target.value){ state.start = e.target.value; save(); render(); } };
+  el.querySelectorAll('details.week').forEach(d => d.ontoggle = () => { openWeeks[d.dataset.w] = d.open; });
+}
+
+/* ================= profile ================= */
+let pLinkEdit = -1, pLinkOpen = false, wishEdit = null;
+function renderPLinks(){
+  const box = $('plinks'); if(!box) return;
+  const p = state.profile, ed = pLinkEdit>=0 ? p.links[pLinkEdit] : {name:'',url:''};
+  box.innerHTML = `
+    <div class="row"><h3>My links</h3><button class="plus" id="plAdd" title="Add link">${icon(pLinkOpen?'x':'plus',18)}</button></div>
+    <form class="form ${pLinkOpen?'open':''}" id="plf" style="margin:12px 0 0">
+      <label class="field full">Name<input name="name" required placeholder="e.g. Instagram" value="${esc(ed.name)}"></label>
+      <label class="field full">Link<input name="url" required placeholder="https://..." value="${esc(ed.url)}"></label>
+      <div class="btns"><button class="btn primary big" type="submit">${icon('save',18)} Save</button><button type="button" class="btn" id="plCancel">Cancel</button></div>
+    </form>
+    <div style="margin-top:8px">${p.links.map((l,i)=>{ let host=''; try{ host = new URL(l.url).hostname.replace(/^www\./,''); }catch(e){}
+      return `<div class="drow"><span>${favHtml(l,22)}</span>
+        <a class="main" href="${esc(l.url)}" target="_blank" rel="noopener"><b>${esc(l.name)}</b><small>${esc(host)}</small></a>
+        <button class="ico" data-pe="${i}" title="Edit">${icon('edit',16)}</button><button class="ico del" data-pd="${i}" title="Delete">${icon('trash',16)}</button></div>`; }).join('')
+      || '<div class="empty" style="padding:16px 0 4px">No links yet. Press + to add one.</div>'}</div>`;
+  const close = () => { pLinkEdit = -1; pLinkOpen = false; renderPLinks(); };
+  $('plAdd').onclick = () => { if(pLinkOpen) close(); else { pLinkEdit = -1; pLinkOpen = true; renderPLinks(); } };
+  $('plCancel').onclick = close;
+  $('plf').onsubmit = e => {
+    e.preventDefault(); const f = e.target; let url = f.elements.url.value.trim();
+    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    const item = {id:Date.now(), name:f.elements.name.value.trim(), url};
+    if(pLinkEdit>=0) p.links[pLinkEdit] = {...p.links[pLinkEdit], ...item, id:p.links[pLinkEdit].id}; else p.links.push(item);
+    save(); close(); toast('Saved');
+  };
+  box.querySelectorAll('[data-pe]').forEach(b => b.onclick = () => { pLinkEdit = +b.dataset.pe; pLinkOpen = true; renderPLinks(); });
+  box.querySelectorAll('[data-pd]').forEach(b => b.onclick = () => { if(!confirm('Delete this link?')) return; p.links.splice(+b.dataset.pd,1); save(); renderPLinks(); });
+}
+function renderPWishes(){
+  const box = $('pwishes'); if(!box) return;
+  const p = state.profile, done = p.wishes.filter(w=>w.done).length;
+  box.innerHTML = `
+    <div class="row"><h3>My wishes</h3><span class="sub">${done} of ${p.wishes.length} done</span></div>
+    <form id="pwf" style="display:flex;gap:8px;margin:12px 0">
+      <input class="input" style="flex:1" name="t" dir="auto" placeholder="Write a wish or goal…" autocomplete="off">
+      <button class="btn primary" type="submit">${icon('plus',16)} Add</button></form>
+    <div>${p.wishes.map(w => wishEdit===w.id
+      ? `<form class="drow" data-ws="${w.id}"><input class="input" style="flex:1" name="t" dir="auto" value="${esc(w.t)}"><button class="btn primary" type="submit">Save</button><button type="button" class="btn" data-wc="1">Cancel</button></form>`
+      : `<div class="drow ${w.done?'done':''}"><button class="chk" data-wt="${w.id}" title="Mark as done">${w.done?icon('check',15):''}</button>
+          <div class="main wishtxt" dir="auto">${esc(w.t)}</div>
+          <button class="ico" data-we="${w.id}" title="Edit">${icon('edit',16)}</button><button class="ico del" data-wd="${w.id}" title="Delete">${icon('trash',16)}</button></div>`).join('')
+      || '<div class="empty" style="padding:16px 0 4px">No wishes yet. Write your first one above.</div>'}</div>`;
+  $('pwf').onsubmit = e => { e.preventDefault(); const t = e.target.elements.t.value.trim(); if(!t) return;
+    p.wishes.push({id:Date.now(), t, done:false}); save(); renderPWishes(); toast('Saved'); };
+  box.querySelectorAll('[data-wt]').forEach(b => b.onclick = () => { const w = p.wishes.find(x=>String(x.id)===b.dataset.wt); w.done = !w.done; save(); renderPWishes(); });
+  box.querySelectorAll('[data-we]').forEach(b => b.onclick = () => { wishEdit = +b.dataset.we; renderPWishes(); });
+  box.querySelectorAll('[data-wd]').forEach(b => b.onclick = () => { if(!confirm('Delete this wish?')) return; p.wishes = p.wishes.filter(x=>String(x.id)!==b.dataset.wd); save(); renderPWishes(); });
+  box.querySelectorAll('form[data-ws]').forEach(f => { f.onsubmit = e => { e.preventDefault(); const t = f.elements.t.value.trim();
+    if(t){ p.wishes.find(x=>String(x.id)===f.dataset.ws).t = t; } wishEdit = null; save(); renderPWishes(); }; });
+  box.querySelectorAll('[data-wc]').forEach(b => b.onclick = () => { wishEdit = null; renderPWishes(); });
+}
+let postPending = [], postEdit = null;
+function viewProfile(el){
+  const p = state.profile, a = ageInfo(p.birth);
+  el.innerHTML = `
+  <div class="page-head"><div><h2>My profile</h2><div class="sub">Everything here can be edited. Press Save to keep your changes.</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="shPrev">${icon('eye',16)} Preview</button>
+      <button class="btn primary" id="shBtn">${icon('share',16)} Share profile</button></div></div>
+
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px">
+    <div class="banner" ${p.banner?`data-fid="${esc(p.banner)}"`:''}></div>
+    <div class="pcover-body">
+      <div class="pcover-av">${avatarHtml(96)}</div>
+      <div style="min-width:0;flex:1;padding-top:10px">
+        <h3 style="font-size:22px;letter-spacing:-.02em;margin:0">${userName()?esc(userName()):'Your name'}</h3>
+        ${a?`<span class="pchip">${a.age} years old</span><span class="pchip">${a.days===0?'Happy birthday! 🎉':'Birthday in '+a.days+' day'+(a.days===1?'':'s')}</span>`:''}
+        ${p.bio?`<div class="pf-bio" dir="auto">${esc(p.bio)}</div>`:'<div class="sub" style="margin-top:6px">Add a short bio about yourself.</div>'}
+      </div></div></div>
+
+  <div class="grid g2" style="align-items:start">
+    <form class="card" id="pf">
+      <h3 style="margin-bottom:12px">Edit profile</h3>
+      <div class="stack" style="gap:12px">
+        <div class="field">Profile photo
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button type="button" class="btn" id="pfpBtn">${icon('upload',16)} ${p.pfp?'Change photo':'Add photo'}</button>
+            ${p.pfp?'<button type="button" class="btn danger" id="pfpDel">Remove</button>':''}
+            <input type="file" id="pfpFile" accept="image/*" hidden></div></div>
+        <div class="field">Banner
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button type="button" class="btn" id="bnBtn">${icon('image',16)} ${p.banner?'Change banner':'Add banner'}</button>
+            ${p.banner?'<button type="button" class="btn danger" id="bnDel">Remove</button>':''}
+            <input type="file" id="bnFile" accept="image/*" hidden></div></div>
+        <label class="field">Name<input name="name" required maxlength="40" autocomplete="off" placeholder="Your name" value="${esc(p.name)}"></label>
+        <label class="field">Date of birth<input type="date" name="birth" value="${esc(p.birth)}"></label>
+        <label class="field">Bio<textarea name="bio" rows="4" dir="auto" placeholder="Tell something about yourself…">${esc(p.bio)}</textarea></label>
+        <div class="btns"><button class="btn primary big" type="submit">${icon('save',18)} Save</button></div>
+      </div>
+    </form>
+    <div class="stack">
+      <div class="card" id="plinks"></div>
+      <div class="card" id="pwishes"></div>
+    </div>
+  </div>
+  <div class="card" id="pposts" style="margin-top:16px"></div>`;
+
+  const f = $('pf');
+  const readForm = () => { p.name = f.elements.name.value.trim(); p.birth = f.elements.birth.value; p.bio = f.elements.bio.value.trim(); };
+  f.onsubmit = e => { e.preventDefault(); readForm(); save(); refreshChrome(); viewProfile(el); toast('Saved'); };
+  const MAXGIF = 8*1024*1024;
+  $('pfpBtn').onclick = () => $('pfpFile').click();
+  $('pfpFile').onchange = async e => {
+    const file = e.target.files[0]; e.target.value = ''; if(!file) return;
+    const gif = file.type === 'image/gif';
+    if(gif && file.size > MAXGIF) return alert('That GIF is too large. Please use one under 8 MB.');
+    try{
+      const blob = gif ? file : await imgToBlob(file,256,256,true,.85), id = newFid();
+      await FDB.put(id,blob); readForm();
+      if(p.pfp && !p.pfp.startsWith('data:')) FDB.del(p.pfp).catch(()=>{});
+      p.pfp = id; save(); await loadPfp(); refreshChrome(); viewProfile(el); toast(gif ? 'GIF saved' : 'Photo saved');
+    }catch(err){ alert('Could not use that image.'); }
+  };
+  if($('pfpDel')) $('pfpDel').onclick = () => { readForm(); if(p.pfp && !p.pfp.startsWith('data:')) FDB.del(p.pfp).catch(()=>{}); p.pfp = ''; pfpUrl = ''; save(); refreshChrome(); viewProfile(el); };
+  $('bnBtn').onclick = () => $('bnFile').click();
+  $('bnFile').onchange = async e => {
+    const file = e.target.files[0]; e.target.value = ''; if(!file) return;
+    const gif = file.type === 'image/gif';
+    if(gif && file.size > MAXGIF) return alert('That GIF is too large. Please use one under 8 MB.');
+    try{
+      const blob = gif ? file : await imgToBlob(file,1500,500,true,.85), id = newFid();
+      await FDB.put(id,blob); readForm();
+      if(p.banner) FDB.del(p.banner).catch(()=>{});
+      p.banner = id; save(); viewProfile(el); toast(gif ? 'GIF saved' : 'Banner saved');
+    }catch(err){ alert('Could not save that image in this browser.'); }
+  };
+  if($('bnDel')) $('bnDel').onclick = () => { readForm(); if(p.banner) FDB.del(p.banner).catch(()=>{}); p.banner = ''; save(); viewProfile(el); };
+  $('shBtn').onclick = async () => {
+    readForm(); save();
+    try{ const html = await buildShareHtml(); downloadText(html, slug(userName()) + '-profile.html'); toast('Profile page downloaded'); }
+    catch(err){ alert('Could not build the profile page.'); }
+  };
+  $('shPrev').onclick = async () => {
+    readForm(); save();
+    try{ const html = await buildShareHtml(); window.open(URL.createObjectURL(new Blob([html],{type:'text/html'})),'_blank'); }
+    catch(err){ alert('Could not build the profile page.'); }
+  };
+  renderPLinks(); renderPWishes(); renderPosts();
+  hydrate(el);
+}
+
+/* ---------- posts ---------- */
+function postHtml(po){
+  const when = new Date(po.at).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
+  const body = postEdit===po.id
+    ? `<form data-pes="${po.id}"><textarea class="input" name="t" rows="3" dir="auto" style="width:100%">${esc(po.text)}</textarea>
+        <div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" type="submit">${icon('save',15)} Save</button><button type="button" class="btn" data-pec="1">Cancel</button></div></form>`
+    : (po.text ? `<div class="ptext" dir="auto">${esc(po.text)}</div>` : '');
+  return `<div class="post">
+    <div class="ph">${avatarHtml(38)}<div style="flex:1;min-width:0"><b>${userName()?esc(userName()):'Me'}</b><span class="sub">${esc(when)}</span></div>
+      <button class="ico" data-pe="${po.id}" title="Edit">${icon('edit',16)}</button><button class="ico del" data-pd="${po.id}" title="Delete">${icon('trash',16)}</button></div>
+    ${body}
+    ${(po.imgs||[]).length?`<div class="pimgs">${po.imgs.map(id=>`<img data-fid="${esc(id)}" data-view="${esc(id)}" alt="">`).join('')}</div>`:''}
+  </div>`;
+}
+function drawPostPrev(){
+  const box = $('postPrev'); if(!box) return;
+  box.innerHTML = postPending.map((f,i)=>`<div class="pv"><img src="${URL.createObjectURL(f)}" alt=""><button type="button" data-rp="${i}" title="Remove">${icon('x',12)}</button></div>`).join('');
+  box.querySelectorAll('[data-rp]').forEach(b => b.onclick = () => { postPending.splice(+b.dataset.rp,1); drawPostPrev(); });
+}
+function renderPosts(){
+  const box = $('pposts'); if(!box) return;
+  const posts = [...state.posts].sort((a,b)=>b.at-a.at);
+  box.innerHTML = `
+    <div class="row"><h3>My posts</h3><span class="sub">${posts.length} post${posts.length===1?'':'s'}</span></div>
+    <form id="postf" style="margin-top:12px">
+      <textarea class="input" id="postText" dir="auto" rows="3" style="width:100%;resize:vertical" placeholder="Share something…"></textarea>
+      <div class="pprev" id="postPrev"></div>
+      <div class="row" style="margin-top:10px">
+        <div><button type="button" class="btn" id="postImg">${icon('image',16)} Add photos</button><input type="file" id="postFile" accept="image/*" multiple hidden></div>
+        <button class="btn primary big" type="submit">${icon('save',18)} Post</button></div>
+    </form>
+    <div style="margin-top:14px">${posts.map(postHtml).join('') || '<div class="empty" style="padding:20px 0 4px">No posts yet. Share your first one above.</div>'}</div>`;
+  drawPostPrev(); hydrate(box);
+  $('postImg').onclick = () => $('postFile').click();
+  $('postFile').onchange = e => { postPending.push(...[...e.target.files]); e.target.value = ''; drawPostPrev(); };
+  $('postf').onsubmit = async e => {
+    e.preventDefault();
+    const t = $('postText').value.trim();
+    if(!t && !postPending.length) return alert('Write something or add a photo first.');
+    try{
+      const ids = [];
+      for(const file of postPending){ const b = file.type==='image/gif' ? file : await imgToBlob(file,1280,1280,false,.82), id = newFid(); await FDB.put(id,b); ids.push(id); }
+      state.posts.push({id:Date.now(), text:t, imgs:ids, at:Date.now()});
+      postPending = []; save(); renderPosts(); toast('Posted');
+    }catch(err){ alert('Could not save the photos in this browser.'); }
+  };
+  box.onclick = e => {
+    const v = e.target.closest('[data-view]'), ed = e.target.closest('[data-pe]'), del = e.target.closest('[data-pd]'), cn = e.target.closest('[data-pec]');
+    if(v) openViewer({id:v.dataset.view, name:'photo.jpg', type:'image/jpeg'});
+    else if(ed){ postEdit = +ed.dataset.pe; renderPosts(); }
+    else if(cn){ postEdit = null; renderPosts(); }
+    else if(del){
+      if(!confirm('Delete this post?')) return;
+      const po = state.posts.find(x=>String(x.id)===del.dataset.pd);
+      (po.imgs||[]).forEach(id => FDB.del(id).catch(()=>{}));
+      state.posts = state.posts.filter(x=>x!==po); save(); renderPosts();
+    }
+  };
+  box.querySelectorAll('form[data-pes]').forEach(fm => { fm.onsubmit = e => {
+    e.preventDefault(); const po = state.posts.find(x=>String(x.id)===fm.dataset.pes);
+    po.text = fm.elements.t.value.trim(); postEdit = null; save(); renderPosts(); }; });
+}
+
+/* ---------- share profile as one .html file ---------- */
+async function blobData(id){
+  try{
+    const b = await FDB.get(id); if(!b) return '';
+    return await new Promise((res,rej)=>{ const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(b); });
+  }catch(e){ return ''; }
+}
+async function buildShareHtml(){
+  const p = state.profile, name = userName() || 'My profile', accent = state.settings.accent;
+  const banner = p.banner ? await blobData(p.banner) : '';
+  const pfpSrc = !p.pfp ? '' : p.pfp.startsWith('data:') ? p.pfp : await blobData(p.pfp);
+  const posts = [...state.posts].sort((a,b)=>b.at-a.at);
+  let feed = '';
+  for(const po of posts){
+    let imgs = '';
+    for(const id of po.imgs||[]){ const d = await blobData(id); if(d) imgs += `<img src="${d}" alt="">`; }
+    feed += `<article class="post"><time>${esc(new Date(po.at).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'}))}</time>${po.text?`<p dir="auto">${esc(po.text)}</p>`:''}${imgs?`<div class="imgs">${imgs}</div>`:''}</article>`;
+  }
+  const ini = name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+  const avatar = pfpSrc ? `<img class="av" src="${esc(pfpSrc)}" alt="">` : `<div class="av ph">${esc(ini||'?')}</div>`;
+  const links = p.links.map(l=>`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.name)}</a>`).join('');
+  let dlHref = '';
+  try{
+    const src = trackerSource();
+    if(window.CompressionStream && window.DecompressionStream) dlHref = 'data:text/html;base64,' + btoa(loaderHtml(await gzipB64(src)));
+    else dlHref = 'data:text/html;base64,' + btoa(unescape(encodeURIComponent(src)));
+  }catch(e){}
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(name)}</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:${esc(accent)}}
+@media (prefers-color-scheme:dark){:root{--bg:#0c0f16;--card:#141926;--text:#e9ecf5;--muted:#8d96ab;--line:#232b3d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:20px 14px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.banner{height:200px;background:${banner?`url("${banner}") center/cover`:`linear-gradient(135deg,var(--accent),#222)`}}
+.head{padding:0 22px 22px}.av{width:104px;height:104px;border-radius:50%;object-fit:cover;border:4px solid var(--card);margin-top:-54px;display:block;background:var(--accent)}
+.av.ph{display:flex;align-items:center;justify-content:center;color:#fff;font-size:36px;font-weight:700}
+h1{margin:10px 0 2px;font-size:26px;letter-spacing:-.02em}.bio{white-space:pre-wrap;margin:8px 0 0}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.links a{color:var(--accent);border:1px solid var(--line);border-radius:99px;padding:5px 14px;text-decoration:none;font-weight:600;font-size:14px}
+h2{font-size:18px;margin:26px 4px 10px}.post{padding:16px 20px;border-bottom:1px solid var(--line)}.post:last-child{border-bottom:none}
+.post time{color:var(--muted);font-size:13px}.post p{white-space:pre-wrap;margin:6px 0 0;word-break:break-word}
+.imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px}.imgs img{width:100%;border-radius:12px;display:block}
+.empty{color:var(--muted);padding:20px;text-align:center}.cta{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.cta .l{display:flex;gap:10px;align-items:center;min-width:0}.cta b{font-size:13.5px;font-weight:600}.dl{background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border-radius:9px;padding:7px 14px;font-size:13px;white-space:nowrap}.dl:hover{filter:brightness(1.08)}
+</style></head><body><div class="wrap">
+<div class="card"><div class="banner"></div><div class="head">${avatar}<h1>${esc(name)}</h1>${p.bio?`<p class="bio" dir="auto">${esc(p.bio)}</p>`:''}${links?`<div class="links">${links}</div>`:''}</div></div>
+<h2>Posts</h2><div class="card">${feed || '<div class="empty">No posts yet.</div>'}</div>
+<section class="cta"><div class="l">${logoSvg(26, accent)}<b>Create your own profile in IELTS Tracker</b></div><a class="dl" download="ielts-tracker.html" href="${dlHref}">Get IELTS Tracker</a></section></div></body></html>`;
+}
+
+function showWelcome(){
+  if(document.querySelector('.welcome')) return;
+  const back = document.createElement('div');
+  back.className = 'modal-back sticky welcome';
+  back.innerHTML = `<form class="modal card" style="text-align:center;padding:28px">
+    <div style="display:flex;justify-content:center;margin-bottom:14px">${logoSvg(64)}</div>
+    <h3 style="font-size:22px;letter-spacing:-.02em">Welcome to IELTS Tracker</h3>
+    <div class="sub" style="margin:6px 0 18px">Let's start with your name. You can change it later in Settings or My profile.</div>
+    <label class="field" style="text-align:left">Your name<input id="wName" autocomplete="off" maxlength="40" placeholder="Write your name"></label>
+    <div class="wmsg err" id="wnErr" style="min-height:22px"></div>
+    <button class="btn primary big" type="submit" style="width:100%;margin-top:6px">${icon('save',18)} Save</button></form>`;
+  document.body.appendChild(back);
+  const inp = back.querySelector('#wName');
+  back.querySelector('form').onsubmit = e => {
+    e.preventDefault();
+    const n = inp.value.trim();
+    if(!n){ back.querySelector('#wnErr').textContent = 'Please write your name.'; inp.focus(); return; }
+    state.profile.name = n; state.onboarded = true; save(); back.remove(); refreshChrome(); render(); toast('Welcome, ' + n + '!');
+  };
+  inp.focus();
+}
+
+/* ================= notes ================= */
+const NOTE_COLORS = ['', '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
+let nq = '';
+function noteCard(n){
+  const done = n.checks.filter(c=>c.done).length;
+  const imgs = n.files.filter(f=>f.type.startsWith('image/')), others = n.files.filter(f=>!f.type.startsWith('image/'));
+  return `<div class="note" ${n.color?`style="--nc:${n.color}"`:''}>
+    <div class="nhead"><h3 dir="auto">${esc(n.title||'Untitled')}</h3>
+      <div style="white-space:nowrap"><button class="ico" data-ne="${n.id}" title="Edit">${icon('edit',16)}</button><button class="ico del" data-nd="${n.id}" title="Delete">${icon('trash',16)}</button></div></div>
+    ${n.desc?`<div class="ndesc" dir="auto">${esc(n.desc)}</div>`:''}
+    ${n.checks.length?`<div class="nchecks">${n.checks.map(c=>`<div class="ncheck ${c.done?'done':''}"><button class="chk" data-nc="${n.id}:${c.id}" title="Tick">${c.done?icon('check',14):''}</button><span dir="auto">${esc(c.t)}</span></div>`).join('')}<div class="sub" style="margin-top:4px">${done} of ${n.checks.length} done</div></div>`:''}
+    ${imgs.length?`<div class="nimgs">${imgs.map(f=>`<img data-fid="${esc(f.id)}" data-open="${n.id}:${esc(f.id)}" alt="">`).join('')}</div>`:''}
+    ${others.length?`<div class="nfiles">${others.map(f=>`<button class="nfile" data-open="${n.id}:${esc(f.id)}">${icon(fileIcon(f.type),16)}<span>${esc(f.name)}</span><small>${fmtSize(f.size)}</small></button>`).join('')}</div>`:''}
+    <div class="nfoot">${esc(new Date(n.updated).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}))}</div></div>`;
+}
+function renderNotes(){
+  const box = $('nlist'); if(!box) return;
+  const q = nq.trim().toLowerCase();
+  const list = state.notes.filter(n => !q || (n.title+' '+n.desc+' '+n.checks.map(c=>c.t).join(' ')).toLowerCase().includes(q)).sort((a,b)=>b.updated-a.updated);
+  box.innerHTML = list.map(noteCard).join('') || `<div class="card empty" style="column-span:all">${state.notes.length?'No notes match your search.':'No notes yet. Press <b>New note</b> to write your first one.'}</div>`;
+  hydrate(box);
+}
+function viewNotes(el){
+  el.innerHTML = `
+  <div class="page-head"><div><h2>Notes</h2><div class="sub">Write notes, add checklists, colours and attach any file.</div></div>
+    <button class="btn primary" id="newNote">${icon('plus',16)} New note</button></div>
+  <div class="toolbar"><input class="input" id="nsearch" dir="auto" placeholder="Search notes…" value="${esc(nq)}"></div>
+  <div class="notes" id="nlist"></div>`;
+  renderNotes();
+  $('newNote').onclick = () => openNoteEditor(null);
+  $('nsearch').oninput = e => { nq = e.target.value; renderNotes(); };
+  $('nlist').onclick = e => {
+    const ed = e.target.closest('[data-ne]'), del = e.target.closest('[data-nd]'), ck = e.target.closest('[data-nc]'), op = e.target.closest('[data-open]');
+    if(ed) openNoteEditor(+ed.dataset.ne);
+    else if(del){
+      const n = state.notes.find(x=>String(x.id)===del.dataset.nd);
+      if(!confirm(`Delete the note “${n.title||'Untitled'}”?`)) return;
+      n.files.forEach(f => FDB.del(f.id).catch(()=>{}));
+      state.notes = state.notes.filter(x=>x!==n); save(); renderNotes();
+    }
+    else if(ck){ const [nid,cid] = ck.dataset.nc.split(':'); const n = state.notes.find(x=>String(x.id)===nid); const c = n.checks.find(x=>String(x.id)===cid); c.done = !c.done; save(); renderNotes(); }
+    else if(op){ const [nid,fid] = op.dataset.open.split(':'); const n = state.notes.find(x=>String(x.id)===nid); const f = n.files.find(x=>x.id===fid); if(f) openViewer(f); }
+  };
+}
+function openNoteEditor(id){
+  const ex = id ? state.notes.find(n=>n.id===id) : null;
+  const d = ex ? JSON.parse(JSON.stringify(ex)) : {id:Date.now(), title:'', desc:'', color:'', checks:[], files:[], created:Date.now()};
+  const removed = [], pending = [];
+  const back = document.createElement('div');
+  back.className = 'modal-back sticky';
+  back.innerHTML = `<form class="modal card wide">
+    <h3>${ex?'Edit note':'New note'}</h3>
+    <div class="stack" style="margin-top:14px;gap:14px">
+      <label class="field">Title<input name="title" dir="auto" maxlength="120" autocomplete="off" placeholder="Note title" value="${esc(d.title)}"></label>
+      <label class="field">Description<textarea name="desc" rows="4" dir="auto" placeholder="Write your note…">${esc(d.desc)}</textarea></label>
+      <div class="field">Checklist<div id="neChecks"></div>
+        <div style="display:flex;gap:8px;margin-top:4px"><input class="input" id="neNew" dir="auto" style="flex:1" placeholder="Add an item and press Enter" autocomplete="off"><button type="button" class="btn" id="neAdd">${icon('plus',15)} Add</button></div></div>
+      <div class="field">Colour<div class="swatches" id="neColors" style="flex-wrap:wrap"></div></div>
+      <div class="field">Files <span style="font-weight:400">(PDF, photos, music, video, anything)</span><div id="neFiles"></div>
+        <div><button type="button" class="btn" id="neAttach">${icon('clip',16)} Attach files</button><input type="file" id="neFile" multiple hidden></div></div>
+      <div class="wmsg err" id="neErr"></div>
+      <div class="btns"><button class="btn primary big" type="submit">${icon('save',18)} Save</button><button type="button" class="btn" id="neCancel">Cancel</button></div>
+    </div></form>`;
+  document.body.appendChild(back);
+  const q = sel => back.querySelector(sel), form = q('form');
+  const drawChecks = () => {
+    q('#neChecks').innerHTML = d.checks.map((c,i)=>`<div class="nerow"><button type="button" class="chk" data-ct="${i}" style="${c.done?'background:var(--ok);border-color:var(--ok)':''}">${c.done?icon('check',14):''}</button>
+      <input class="input" dir="auto" data-ci="${i}" value="${esc(c.t)}"><button type="button" class="ico del" data-cd="${i}" title="Remove">${icon('x',16)}</button></div>`).join('');
+    q('#neChecks').querySelectorAll('[data-ct]').forEach(b => b.onclick = () => { d.checks[+b.dataset.ct].done = !d.checks[+b.dataset.ct].done; drawChecks(); });
+    q('#neChecks').querySelectorAll('[data-ci]').forEach(i => i.oninput = () => { d.checks[+i.dataset.ci].t = i.value; });
+    q('#neChecks').querySelectorAll('[data-cd]').forEach(b => b.onclick = () => { d.checks.splice(+b.dataset.cd,1); drawChecks(); });
+  };
+  const addCheck = () => { const v = q('#neNew').value.trim(); if(!v) return; d.checks.push({id:Date.now()+Math.random(), t:v, done:false}); q('#neNew').value = ''; drawChecks(); q('#neNew').focus(); };
+  const drawColors = () => {
+    q('#neColors').innerHTML = NOTE_COLORS.map(c=>`<button type="button" class="sw ${c?'':'none'} ${d.color===c?'on':''}" data-col="${c}" style="${c?'background:'+c:''}" title="${c||'No colour'}"></button>`).join('');
+    q('#neColors').querySelectorAll('[data-col]').forEach(b => b.onclick = () => { d.color = b.dataset.col; drawColors(); });
+  };
+  const drawFiles = () => {
+    q('#neFiles').innerHTML = [...d.files.map(f=>({k:'old',id:f.id,name:f.name,size:f.size,type:f.type})), ...pending.map((p,i)=>({k:'new',id:i,name:p.file.name,size:p.file.size,type:p.file.type||''}))].map(f=>`
+      <div class="nerow">${icon(fileIcon(f.type),16)}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${esc(f.name)}</span><span class="sub">${fmtSize(f.size)}</span>
+      <button type="button" class="ico del" data-fk="${f.k}:${esc(f.id)}" title="Remove">${icon('x',16)}</button></div>`).join('');
+    q('#neFiles').querySelectorAll('[data-fk]').forEach(b => b.onclick = () => {
+      const [k,fid] = b.dataset.fk.split(':');
+      if(k==='old'){ d.files = d.files.filter(f=>f.id!==fid); removed.push(fid); } else pending.splice(+fid,1);
+      drawFiles();
+    });
+  };
+  drawChecks(); drawColors(); drawFiles();
+  q('#neAdd').onclick = addCheck;
+  q('#neNew').onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); addCheck(); } };
+  q('#neAttach').onclick = () => q('#neFile').click();
+  q('#neFile').onchange = e => { [...e.target.files].forEach(file => pending.push({id:newFid(), file})); e.target.value = ''; drawFiles(); };
+  q('#neCancel').onclick = () => back.remove();
+  form.onsubmit = async e => {
+    e.preventDefault();
+    d.title = form.elements.title.value.trim(); d.desc = form.elements.desc.value.trim();
+    if(!d.title){ q('#neErr').textContent = 'Please write a title.'; form.elements.title.focus(); return; }
+    try{
+      for(const pf of pending){ await FDB.put(pf.id, pf.file); d.files.push({id:pf.id, name:pf.file.name, type:pf.file.type||'application/octet-stream', size:pf.file.size}); }
+      for(const fid of removed) await FDB.del(fid).catch(()=>{});
+    }catch(err){ q('#neErr').textContent = 'Could not store the files in this browser. Try smaller files.'; return; }
+    d.updated = Date.now();
+    if(ex) Object.assign(ex, d); else state.notes.push(d);
+    save(); back.remove(); if(current==='notes') viewNotes($('view')); toast('Saved');
+  };
+  form.elements.title.focus();
+}
+
+/* ================= Oxford words page ================= */
+let oxF = 'all', oxEdit = -1, oxTry = '', oxRefQ = '', oxRefF = 'all', oxRefLimit = 300;
+function lev(a,b){
+  const m = a.length, n = b.length; if(!m) return n; if(!n) return m;
+  let prev = Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){ const cur = [i]; for(let j=1;j<=n;j++) cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev = cur; }
+  return prev[n];
+}
+function oxSuggest(word){
+  const n = norm(word); if(!n) return [];
+  const lim = n.length <= 4 ? 1 : 2, out = [];
+  for(const k in state.oxford){ if(Math.abs(k.length-n.length) > lim) continue; const dd = lev(n,k); if(dd>0 && dd<=lim) out.push([dd,k]); }
+  out.sort((x,y)=>x[0]-y[0] || x[1].localeCompare(y[1]));
+  return out.slice(0,3).map(x=>x[1]);
+}
+function oxResultHtml(word){
+  if(!word.trim()) return '';
+  const r = oxCheck(word);
+  if(!r.loaded) return `<span class="ox none">Load the Oxford lists above to check words.</span>`;
+  if(r.found) return `<span class="ox yes">${icon('checkc',16)} Correct — in the Oxford ${r.t}${r.exact?'':` (as “${esc(r.key)}”)`}</span>`;
+  const sg = oxSuggest(word);
+  return `<span class="ox bad">${icon('x',16)} Not found — check the spelling</span>${sg.length?` <span class="sub">Did you mean:</span> ${sg.map(x=>`<button type="button" class="sug" data-try="${esc(x)}">${esc(x)}</button>`).join('')}`:''}`;
+}
+function oxPanelHtml(){
+  const oc = oxCounts();
+  return `<details class="card" id="oxp" style="margin-bottom:16px" ${(!oc.n||oxOpen)?'open':''}>
+    <summary>${icon('checkc',17)} Load the Oxford 3000 &amp; 5000 lists <span class="sub">${oc.n?`${oc.a} words in the 3000 · ${oc.b} more in the 5000`:'not loaded yet'}</span></summary>
+    <div class="stack">
+      <div class="sub">Load the lists once so the app can check your spelling. Open
+        <a href="https://www.oxfordlearnersdictionaries.com/wordlists/oxford3000-5000" target="_blank" rel="noopener" style="color:var(--accent)">Oxford Learner's Dictionaries</a>,
+        copy a list, choose which list it is, and paste it here. You can also upload a .txt or .csv file. Labels like “noun A1” are removed automatically.</div>
+      <div class="seg" id="oxSeg"><button data-l="3" class="${oxSel==='3'?'on':''}">Oxford 3000</button><button data-l="5" class="${oxSel==='5'?'on':''}">Oxford 5000</button></div>
+      <textarea class="input" id="oxPaste" rows="5" placeholder="Paste the list here…"></textarea>
+      <div class="row">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" id="oxImport">${icon('upload',16)} Load list</button>
+          <button class="btn" id="oxFileBtn">${icon('download',16)} Upload file</button>
+          <input type="file" id="oxFile" accept=".txt,.csv,text/plain,text/csv" hidden>
+        </div>
+        ${oc.n?'<button class="btn danger" id="oxClear">Clear Oxford lists</button>':''}
+      </div>
+      <div class="sub" id="oxMsg">${esc(oxNote)}</div>
+    </div></details>`;
+}
+function bindOxPanel(rerender){
+  $('oxp').ontoggle = () => { oxOpen = $('oxp').open; };
+  $('oxSeg').onclick = e => { const b = e.target.closest('button'); if(!b) return; oxSel = b.dataset.l;
+    $('oxSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b)); };
+  const doImport = text => {
+    if(!text.trim()){ $('oxMsg').textContent = 'Paste a list first.'; return; }
+    const r = importOxford(text, oxSel);
+    oxNote = r.total ? `Loaded ${r.added} new word${r.added===1?'':'s'} into the Oxford ${oxSel==='3'?3000:5000} list (${r.total} read).` : 'No words found in that text.';
+    oxOpen = true; rerender();
+  };
+  $('oxImport').onclick = () => doImport($('oxPaste').value);
+  $('oxFileBtn').onclick = () => $('oxFile').click();
+  $('oxFile').onchange = e => { const file = e.target.files[0]; if(!file) return;
+    const r = new FileReader(); r.onload = () => doImport(String(r.result)); r.readAsText(file); e.target.value = ''; };
+  if($('oxClear')) $('oxClear').onclick = () => { if(confirm('Remove the loaded Oxford lists? Your own words are not touched.')){ state.oxford = {}; oxNote = 'Oxford lists cleared.'; save(); rerender(); } };
+}
+function drawOxChips(){
+  const box = $('oxChips'); if(!box) return;
+  const mine = new Set(state.words.map(x=>norm(x.w))), q = norm(oxRefQ);
+  const keys = Object.keys(state.oxford).filter(k => (oxRefF==='all' || state.oxford[k]===oxRefF) && (!q || k.includes(q))).sort();
+  const shown = keys.slice(0, oxRefLimit);
+  box.innerHTML = `<div class="sub" style="margin-bottom:8px">${keys.length} word${keys.length===1?'':'s'} · <span style="color:var(--ok);font-weight:600">green</span> = already in my list</div>
+    <div class="chips">${shown.map(k=>`<span class="rchip ${mine.has(k)?'mine':''}">${esc(k)}</span>`).join('') || '<span class="sub">No words match.</span>'}</div>
+    ${keys.length>oxRefLimit?`<div style="margin-top:12px"><button class="btn" id="oxRefMore">Show more (${keys.length-oxRefLimit} left)</button></div>`:''}`;
+  if($('oxRefMore')) $('oxRefMore').onclick = () => { oxRefLimit += 300; drawOxChips(); };
+}
+function renderOxRef(){
+  const box = $('oxref'); if(!box) return;
+  const oc = oxCounts(), show = !!state.settings.oxShow;
+  box.innerHTML = `
+    <div class="row"><div><h3>Oxford word list</h3><div class="sub">${oc.n?`${oc.a} words in the 3000 · ${oc.b} more in the 5000`:'not loaded yet'}</div></div>
+      <button class="btn" id="oxEye" title="${show?'Hide the list':'Show the list'}">${icon(show?'eyeoff':'eye',17)} ${show?'Hide words':'Show words'}</button></div>
+    ${!oc.n ? `<div class="sub" style="padding-top:10px">Load the Oxford lists above to see the words here.</div>`
+      : !show ? `<div class="sub" style="padding-top:10px">The list is hidden. Press the eye to see all ${oc.n} words.</div>`
+      : `<div class="toolbar" style="margin-top:12px"><input class="input" id="oxRefQ" dir="auto" placeholder="Search the Oxford list…" value="${esc(oxRefQ)}" autocomplete="off">
+          <div class="seg" id="oxRefF"><button data-f="all" class="${oxRefF==='all'?'on':''}">All</button><button data-f="3" class="${oxRefF==='3'?'on':''}">3000</button><button data-f="5" class="${oxRefF==='5'?'on':''}">5000</button></div></div>
+         <div id="oxChips"></div>`}`;
+  $('oxEye').onclick = () => { state.settings.oxShow = !state.settings.oxShow; save(); renderOxRef(); };
+  if(oc.n && show){
+    drawOxChips();
+    $('oxRefQ').oninput = e => { oxRefQ = e.target.value; oxRefLimit = 300; drawOxChips(); };
+    $('oxRefF').onclick = e => { const b = e.target.closest('button'); if(!b) return; oxRefF = b.dataset.f; oxRefLimit = 300;
+      $('oxRefF').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b)); drawOxChips(); };
+  }
+}
+function oxTile(x,i){
+  const r = oxCheck(x.w), cls = !r.loaded ? '' : r.found ? 'ok' : 'bad';
+  if(oxEdit===i) return `<form class="otile ${cls}" data-oxe="${i}">
+    <input class="input" name="w" value="${esc(x.w)}" autocomplete="off" style="width:100%">
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" type="submit">${icon('check',15)} Check</button><button type="button" class="btn" data-oxc="1">Cancel</button></div></form>`;
+  const sg = (r.loaded && !r.found) ? oxSuggest(x.w) : [];
+  return `<div class="otile ${cls}">
+    <div class="row" style="flex-wrap:nowrap;gap:8px"><span class="ow">${esc(x.w)}${r.found?`<span class="okc">${icon('checkc',17)}</span>`:''}${r.loaded&&!r.found?`<span class="xc">${icon('x',17)}</span>`:''}</span>
+      <button class="ico" data-oxi="${i}" title="Type it again">${icon('edit',16)}</button></div>
+    ${x.m?`<div class="wmean" dir="auto">${esc(x.m)}</div>`:''}
+    ${r.found?`<div style="color:var(--ok);font-weight:600;font-size:13px;margin-top:4px">Correct · Oxford ${r.t}</div>`:''}
+    ${r.loaded&&!r.found?`<div style="color:var(--danger);font-weight:600;font-size:13px;margin-top:4px">Not found — check the spelling</div>${sg.length?`<div style="margin-top:6px"><span class="sub">Did you mean:</span> ${sg.map(w=>`<button class="sug" data-fix="${i}:${esc(w)}">${esc(w)}</button>`).join('')}</div>`:''}`:''}
+  </div>`;
+}
+function viewOxford(el){
+  const loaded = oxLoaded();
+  const rows = state.words.map((x,i)=>({x,i,r:oxCheck(x.w)}));
+  const ok = rows.filter(r=>r.r.found).length, bad = loaded ? rows.length - ok : 0;
+  const shown = rows.filter(r => oxF==='all' || (oxF==='ok' && r.r.found) || (oxF==='bad' && loaded && !r.r.found));
+  el.innerHTML = `
+  <div class="page-head"><div><h2>Oxford words</h2><div class="sub">Green = spelled correctly (found in the Oxford lists) · Red = not found · No colour = not checked yet</div></div></div>
+  ${oxPanelHtml()}
+  <div class="card" id="oxref" style="margin-bottom:16px"></div>
+  <div class="card" style="margin-bottom:16px"><h3 style="margin-bottom:8px">Check a word</h3>
+    <input class="input" id="oxTry" dir="auto" autocomplete="off" placeholder="Type a word to test your spelling" style="width:100%" value="${esc(oxTry)}">
+    <div id="oxTryRes" style="margin-top:10px;min-height:28px">${oxResultHtml(oxTry)}</div></div>
+  <div class="stats">
+    <div class="st"><span>My words</span><b>${rows.length}</b></div>
+    <div class="st"><span>Correct</span><b style="color:var(--ok)">${loaded?ok:'–'}</b></div>
+    <div class="st"><span>Need fixing</span><b style="color:var(--danger)">${loaded?bad:'–'}</b></div>
+  </div>
+  <div class="toolbar"><div class="seg" id="oxFilter">
+    <button data-f="all" class="${oxF==='all'?'on':''}">All</button><button data-f="ok" class="${oxF==='ok'?'on':''}">Correct</button><button data-f="bad" class="${oxF==='bad'?'on':''}">Wrong</button></div></div>
+  <div class="otiles" id="otiles">${shown.map(r=>oxTile(r.x,r.i)).join('') || `<div class="card empty" style="grid-column:1/-1">${rows.length?'No words in this filter.':'No words yet. Add words in Vocabulary and they will appear here.'}</div>`}</div>`;
+  bindOxPanel(() => viewOxford(el));
+  renderOxRef();
+  const tryRes = () => { $('oxTryRes').innerHTML = oxResultHtml(oxTry); };
+  $('oxTry').oninput = e => { oxTry = e.target.value; tryRes(); };
+  $('oxTryRes').onclick = e => { const b = e.target.closest('[data-try]'); if(b){ oxTry = b.dataset.try; $('oxTry').value = oxTry; tryRes(); } };
+  $('oxFilter').onclick = e => { const b = e.target.closest('button'); if(b){ oxF = b.dataset.f; viewOxford(el); } };
+  const apply = (i,w) => {
+    w = w.trim().replace(/\s+/g,' '); if(!w) return false;
+    const dup = state.words.findIndex((x,k) => x.w.toLowerCase()===w.toLowerCase() && k!==i);
+    if(dup>=0){ alert(`“${w}” is already in your list (#${dup+1}).`); return false; }
+    state.words[i].w = w; save();
+    const r = oxCheck(w); toast(!r.loaded ? 'Saved' : r.found ? 'Correct — turned green' : 'Still not found in Oxford');
+    return true;
+  };
+  $('otiles').onclick = e => {
+    const ed = e.target.closest('[data-oxi]'), fx = e.target.closest('[data-fix]'), cn = e.target.closest('[data-oxc]');
+    if(ed){ oxEdit = +ed.dataset.oxi; viewOxford(el); const inp = el.querySelector('form[data-oxe] input'); if(inp){ inp.focus(); inp.select(); } }
+    else if(cn){ oxEdit = -1; viewOxford(el); }
+    else if(fx){ const [i,w] = fx.dataset.fix.split(':'); if(apply(+i,w)) viewOxford(el); }
+  };
+  el.querySelectorAll('form[data-oxe]').forEach(fm => { fm.onsubmit = e => { e.preventDefault(); const i = +fm.dataset.oxe; if(apply(i, fm.elements.w.value)){ oxEdit = -1; viewOxford(el); } }; });
+}
+
+/* ================= settings ================= */
+function viewSettings(el){
+  const S = state.settings;
+  el.innerHTML = `
+  <div class="page-head"><div><h2>Settings</h2><div class="sub">Everything here is saved the moment you change it.</div></div></div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>Profile & goals</h3>
+    <div class="set"><div><b>Your name</b><span class="sub">Used in your welcome message. More details are in <a href="#profile" style="color:var(--accent)">My profile</a>.</span></div><input class="input" id="sName" value="${esc(state.profile.name)}" placeholder="Name" style="width:200px"></div>
+    <div class="set"><div><b>Daily word goal</b><span class="sub">New words you want to add each day</span></div><input class="input" id="sGoal" type="number" min="1" max="500" value="${S.wordGoal}" style="width:100px"></div>
+    <div class="set"><div><b>Total word target</b><span class="sub">8000 = Oxford 3000 + 5000. You can change it.</span></div><input class="input" id="sTarget" type="number" min="1" max="20000" value="${S.wordTarget}" style="width:100px"></div>
+    <div class="set"><div><b>Test date</b><span class="sub">${state.test?esc(niceDate(state.test.date)):'Not set'}</span></div><button class="btn" id="sTest">${icon(state.test?'edit':'plus',16)} ${state.test?'Change':'Add test date'}</button></div>
+    <div class="set"><div><b>Month start date</b><span class="sub">Month 1 starts on this date (4 weeks per month)</span></div><input class="input" id="sStart" type="date" value="${esc(state.start)}"></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>Appearance</h3>
+    <div class="set"><div><b>Theme</b><span class="sub">Light or dark</span></div>
+      <div class="seg" id="sTheme"><button data-t="light" class="${state.theme==='light'?'on':''}">Light</button><button data-t="dark" class="${state.theme==='dark'?'on':''}">Dark</button></div></div>
+    <div class="set"><div><b>Accent colour</b><span class="sub">Buttons, charts and highlights</span></div>
+      <div class="swatches" id="sAccent">${ACCENTS.map(c=>`<button class="sw ${c===S.accent?'on':''}" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div></div>
+    <div class="set"><div><b>Date colours</b><span class="sub">Green is today, then yellow, orange and red as a date gets older</span></div>
+      <div class="legend"><span><i class="dot" style="background:hsl(135 85% 50%)"></i>Today</span><span><i class="dot" style="background:hsl(50 85% 50%)"></i>1 day</span><span><i class="dot" style="background:hsl(32 85% 50%)"></i>2 days</span><span><i class="dot" style="background:hsl(20 85% 50%)"></i>3–5</span><span><i class="dot" style="background:hsl(0 85% 50%)"></i>6+</span></div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>Data</h3>
+    <div class="set"><div><b>Backup</b><span class="sub">Download your scores, words, notes, profile and posts as text. Attached files and photos are not included.</span></div><button class="btn" id="sExport">${icon('download',16)} Download backup</button></div>
+    <div class="set"><div><b>Restore</b><span class="sub">Load a backup file (replaces current data)</span></div><button class="btn" id="sImport">${icon('upload',16)} Restore backup</button><input type="file" id="sFile" accept="application/json" hidden></div>
+    <div class="set"><div><b>Get IELTS Tracker</b><span class="sub">Download a clean copy of the app (without your data) to share with friends</span></div><button class="btn" id="sApp">${icon('download',16)} Download app</button></div>
+  </div>
+  <div class="card">
+    <h3>Danger zone</h3>
+    <div class="set"><div><b>Clear my word list</b><span class="sub">Removes all your words and meanings</span></div><button class="btn danger" id="sClearWords">Clear words</button></div>
+    <div class="set"><div><b>Reset everything</b><span class="sub">Deletes all data in this browser</span></div><button class="btn danger" id="sReset">Reset all</button></div>
+  </div>`;
+  const num = (v,min,max,def) => { v = parseInt(v,10); return isNaN(v) ? def : Math.max(min,Math.min(max,v)); };
+  $('sName').oninput = e => { state.profile.name = e.target.value; save(); refreshChrome(); };
+  $('sGoal').oninput = e => { S.wordGoal = num(e.target.value,1,500,10); save(); };
+  $('sTarget').oninput = e => { S.wordTarget = num(e.target.value,1,20000,8000); save(); };
+  $('sTest').onclick = showTestModal;
+  $('sStart').onchange = e => { if(e.target.value){ state.start = e.target.value; save(); buildDrawer(current,curMonth); } };
+  $('sTheme').onclick = e => { const b = e.target.closest('button'); if(b) setTheme(b.dataset.t); };
+  $('sAccent').onclick = e => { const b = e.target.closest('button'); if(!b) return; S.accent = b.dataset.c; save(); applyLook(); viewSettings(el); };
+  $('sExport').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));
+    a.download = `ielts-backup-${today()}.json`; a.click(); URL.revokeObjectURL(a.href);
+  };
+  $('sApp').onclick = () => downloadText(trackerSource(), 'ielts-tracker.html');
+  $('sImport').onclick = () => $('sFile').click();
+  $('sFile').onchange = e => {
+    const f = e.target.files[0]; if(!f) return;
+    if(!confirm('Restoring will replace your current data. Continue?')) return;
+    const r = new FileReader();
+    r.onload = () => { try{ const d = JSON.parse(r.result); if(!d.entries) throw 0;
+        localStorage.setItem(KEY, JSON.stringify({...d,v2:true})); state = load(); applyLook(); render(); alert('Backup restored.');
+      }catch(_){ alert('That file is not a valid backup.'); } };
+    r.readAsText(f);
+  };
+  $('sClearWords').onclick = () => { if(confirm('Remove all your words and meanings?')){ state.words = []; save(); toast('Word list cleared'); } };
+  $('sReset').onclick = () => { if(confirm('Delete ALL data in this browser? This cannot be undone.') && confirm('Really delete everything?')){
+    FDB.clear().catch(()=>{}); localStorage.removeItem(KEY); state = load(); applyLook(); render(); } };
+}
+
+/* ================= start ================= */
+applyLook();
+render();
+loadPfp().then(() => { if(pfpUrl){ applyLook(); render(); } });
+</script>
+</body>
+</html>
